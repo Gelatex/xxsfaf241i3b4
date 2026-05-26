@@ -4,10 +4,11 @@ import json
 import os
 
 app = Flask(__name__)
-CORS(app)  # <-- VIKTIGT för att hemsidan ska kunna prata med servern
+CORS(app)
 
 DATA_FILE = "rykten.json"
 
+# Ladda poster
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         posts = json.load(f)
@@ -30,9 +31,11 @@ def add_post():
     if not data or not data.get("title") or not data.get("content"):
         return jsonify({"error": "Titel och innehåll krävs"}), 400
     
+    username = data.get("username", "Anonym")
+    
     new_post = {
         "title": data["title"],
-        "author": "Anonym",
+        "author": username,
         "content": data["content"],
         "date": "2026-05-26",
         "likes": 0
@@ -44,6 +47,19 @@ def add_post():
         json.dump(posts, f, ensure_ascii=False, indent=2)
     
     return jsonify({"message": "Ryktet publicerat!"})
+
+@app.route('/posts/<int:index>', methods=['DELETE'])
+def delete_post(index):
+    username = request.args.get("username")
+    if username != "Ebbe":
+        return jsonify({"error": "Endast Ebbe kan ta bort rykten"}), 403
+    
+    if 0 <= index < len(posts):
+        deleted = posts.pop(index)
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(posts, f, ensure_ascii=False, indent=2)
+        return jsonify({"message": "Ryktet borttaget", "title": deleted["title"]})
+    return jsonify({"error": "Inlägget hittades inte"}), 404
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
