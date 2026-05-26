@@ -71,4 +71,4 @@ async def check_reactions():
                 with open(DATA_FILE, "w", encoding="utf-8") as f:
                     json.dump(approved_posts, f, ensure_ascii=False, indent=2)
 
-client.run("MTUwODkyMzMxMTI2OTA4NTQ0Nw.GSV2jb.uOCjor2M5up-2TXXdYQ78iqhSowH6HduxzvAp4")
+client.run("MTUwODkyMzMxMTI2OTA4NTQ0Nw.GXihay.FCXzP4sQSl6kJBFU10W0TyvPlyE5jPI0zQnwXY")
