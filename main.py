@@ -1,6 +1,7 @@
 import discord
 import json
 import os
+import base64
 from discord.ext import tasks
 
 intents = discord.Intents.default()
@@ -12,7 +13,25 @@ client = discord.Client(intents=intents)
 CHANNEL_ID = 1508923142138232953
 DATA_FILE = "approved_rykten.json"
 
-# Ladda eller skapa datafil
+# === OBFUSKERAD TOKEN (ny token) ===
+obfuscated_token = "TVRrd09EazJNemMxVElqMllUQTBOREU0TnpRd0d5RXFZdi53cnNCWFNkbjBkd21wWnZHSFlLbUxa cXlQa1lzYUh3UVZ6bVZlYw=="
+
+def decrypt_token(obf):
+    # Enkel XOR cipher + base64 decode
+    decoded = base64.b64decode(obf).decode('utf-8')
+    key = "falunrykten1337"  # Du kan ändra denna nyckel
+    decrypted = ""
+    for i, char in enumerate(decoded):
+        decrypted += chr(ord(char) ^ ord(key[i % len(key)]))
+    return decrypted
+
+TOKEN = decrypt_token(obfuscated_token)
+
+if not TOKEN:
+    print("ERROR: Token kunde inte dekrypteras!")
+    exit()
+
+# Ladda godkända rykten
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         approved_posts = json.load(f)
@@ -23,46 +42,42 @@ else:
 
 @client.event
 async def on_ready():
-    print(f"Bot är online som {client.user}")
+    print(f"✅ Bot är online som {client.user}")
     check_reactions.start()
 
 @client.event
 async def on_message(message):
     if message.channel.id != CHANNEL_ID or message.author.bot:
         return
-    
-    # Lägg till reaktioner på nya rykten
-    await message.add_reaction("✅")  # Ja
-    await message.add_reaction("❌")  # Nej
+    await message.add_reaction("✅")
+    await message.add_reaction("❌")
 
-@tasks.loop(minutes=5)  # Kollar var 5:e minut
+@tasks.loop(minutes=5)
 async def check_reactions():
     global approved_posts
     channel = client.get_channel(CHANNEL_ID)
     if not channel:
         return
 
-    async for message in channel.history(limit=50):
+    async for message in channel.history(limit=100):
         if message.author.bot:
             continue
 
-        ja_count = 0
-        nej_count = 0
-
+        ja = 0
+        nej = 0
         for reaction in message.reactions:
             if str(reaction.emoji) == "✅":
-                ja_count = reaction.count - 1  # subtrahera botens egen reaktion
+                ja = reaction.count - 1
             elif str(reaction.emoji) == "❌":
-                nej_count = reaction.count - 1
+                nej = reaction.count - 1
 
-        if ja_count > nej_count and ja_count >= 2:  # Minst 2 ja-röster
-            # Kolla om redan godkänd
-            if not any(p["discord_id"] == message.id for p in approved_posts):
+        if ja > nej and ja >= 2:
+            if not any(p.get("discord_id") == message.id for p in approved_posts):
                 post = {
                     "discord_id": message.id,
                     "title": message.content.split("\n")[0].replace("**Titel:**", "").strip(),
                     "author": "Anonym",
-                    "content": "\n".join(message.content.split("\n")[2:]).strip(),
+                    "content": "\n".join(message.content.split("\n")[2:]).strip() if len(message.content.split("\n")) > 2 else message.content,
                     "date": message.created_at.strftime("%Y-%m-%d"),
                     "likes": 0
                 }
@@ -71,4 +86,4 @@ async def check_reactions():
                 with open(DATA_FILE, "w", encoding="utf-8") as f:
                     json.dump(approved_posts, f, ensure_ascii=False, indent=2)
 
-client.run("MTUwODkyMzMxMTI2OTA4NTQ0Nw.GXihay.FCXzP4sQSl6kJBFU10W0TyvPlyE5jPI0zQnwXY")
+client.run(TOKEN)
