@@ -1,12 +1,13 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import json
 import os
 
 app = Flask(__name__)
+CORS(app)  # <-- VIKTIGT för att hemsidan ska kunna prata med servern
 
 DATA_FILE = "rykten.json"
 
-# Ladda eller skapa fil
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         posts = json.load(f)
@@ -25,21 +26,20 @@ def get_posts():
 
 @app.route('/posts', methods=['POST'])
 def add_post():
-    data = request.json
+    data = request.get_json()
     if not data or not data.get("title") or not data.get("content"):
         return jsonify({"error": "Titel och innehåll krävs"}), 400
     
     new_post = {
         "title": data["title"],
-        "author": data.get("author", "Anonym"),
+        "author": "Anonym",
         "content": data["content"],
-        "date": "2026-05-" + str(len(posts) + 15).zfill(2),  # enkel datumhantering
+        "date": "2026-05-26",
         "likes": 0
     }
     
     posts.append(new_post)
     
-    # Spara till fil
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(posts, f, ensure_ascii=False, indent=2)
     
