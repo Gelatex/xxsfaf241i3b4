@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import uuid
 import json
 import math
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -39,17 +40,15 @@ def init_db():
                   total_likes_received INTEGER DEFAULT 0,
                   total_comments_given INTEGER DEFAULT 0,
                   login_streak INTEGER DEFAULT 0,
-                  last_login DATE,
-                  last_post_time TEXT,
-                  active_effects TEXT DEFAULT '[]')''')
+                  last_login TEXT,
+                  last_post_time TEXT)''')
     # Transactions for effects
     c.execute('''CREATE TABLE IF NOT EXISTS transactions
                  (id TEXT PRIMARY KEY,
                   username TEXT,
                   effect_name TEXT,
                   coins_spent INTEGER,
-                  expires_at TEXT,
-                  FOREIGN KEY(username) REFERENCES users(username))''')
+                  expires_at TEXT)''')
     conn.commit()
     conn.close()
 
@@ -69,6 +68,15 @@ def get_user(username):
     conn.close()
     return dict(user) if user else None
 
+def create_user_if_not_exists(username):
+    if get_user(username):
+        return
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO users (username, coins, last_login) VALUES (?, ?, ?)", (username, 50, None))
+    conn.commit()
+    conn.close()
+
 def update_user(username, **kwargs):
     conn = get_db()
     c = conn.cursor()
@@ -81,24 +89,28 @@ def update_user(username, **kwargs):
 def add_xp(username, amount):
     user = get_user(username)
     if not user:
-        return
+        create_user_if_not_exists(username)
+        user = get_user(username)
     new_xp = user['xp'] + amount
-    # Level-up formel: level = floor( (sqrt(1+8*new_xp/50) -1)/2 ) + 1? Enklare: 100 xp per level
+    old_level = user['level']
+    # Level-up formel: 100 XP per level
     new_level = 1 + new_xp // 100
-    if new_level > user['level']:
-        # Level-up bonus coins
-        bonus = new_level * 50
-        new_coins = user['coins'] + bonus
+    if new_level > old_level:
+        bonus_coins = new_level * 50
+        new_coins = user['coins'] + bonus_coins
         update_user(username, xp=new_xp, level=new_level, coins=new_coins)
-        return True, new_level, bonus
+        return True, new_level, bonus_coins
     else:
         update_user(username, xp=new_xp)
-        return False, new_level, 0
+        return False, old_level, 0
 
 def add_coins(username, amount):
     user = get_user(username)
     if user:
         update_user(username, coins=user['coins'] + amount)
+    else:
+        create_user_if_not_exists(username)
+        update_user(username, coins=50 + amount)
 
 def can_post(username):
     user = get_user(username)
@@ -107,25 +119,27 @@ def can_post(username):
     last_post = user.get('last_post_time')
     if not last_post:
         return True, 0
-    # Cooldown baserat på level: level 1-2: 10 min, 3-5:5 min, 6-9:3 min, 10+:1 min
-    if user['level'] >= 10:
+    # Cooldown baserat på level
+    level = user['level']
+    if level >= 10:
         cooldown_min = 1
-    elif user['level'] >= 6:
+    elif level >= 6:
         cooldown_min = 3
-    elif user['level'] >= 3:
+    elif level >= 3:
         cooldown_min = 5
     else:
         cooldown_min = 10
     last = datetime.fromisoformat(last_post)
     if datetime.now() - last < timedelta(minutes=cooldown_min):
-        remaining = (last + timedelta(minutes=cooldown_min) - datetime.now()).seconds
+        remaining = int((last + timedelta(minutes=cooldown_min) - datetime.now()).total_seconds())
         return False, remaining
     return True, 0
 
 def get_active_effects(username):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT effect_name, expires_at FROM transactions WHERE username = ? AND expires_at > ?", (username, datetime.now().isoformat()))
+    c.execute("SELECT effect_name, expires_at FROM transactions WHERE username = ? AND expires_at > ?", 
+              (username, datetime.now().isoformat()))
     rows = c.fetchall()
     conn.close()
     return [row['effect_name'] for row in rows]
@@ -151,6 +165,7 @@ def get_posts():
         post['comments'] = json.loads(post['comments']) if post['comments'] else []
         posts.append(post)
     conn.close()
+    # VIP först, sedan datum fallande
     posts.sort(key=lambda x: (0 if x['vip'] else 1, x['date']), reverse=False)
     return jsonify(posts)
 
@@ -164,6 +179,8 @@ def add_post():
     if not username:
         return jsonify({"error": "Du måste vara inloggad"}), 401
     
+    create_user_if_not_exists(username)
+    
     # Cooldown check
     ok, remaining = can_post(username)
     if not ok:
@@ -172,7 +189,9 @@ def add_post():
     is_anonymous = data.get("anonymous", False)
     is_vip = data.get("vip", False) and username == "Ebbe"
     images = data.get("images", [])
-    effect = data.get("effect")  # vald effekt från användarens aktiva
+    effect = data.get("effect")
+    if effect and effect not in get_active_effects(username):
+        effect = None  # Användaren har inte den effekten aktiv
     
     post_id = uuid.uuid4().hex
     new_post = {
@@ -202,8 +221,9 @@ def add_post():
     conn.commit()
     # Uppdatera användarens last_post_time och total_posts
     user = get_user(username)
-    if user:
-        update_user(username, last_post_time=datetime.now().isoformat(), total_posts=user['total_posts']+1)
+    update_user(username, 
+                last_post_time=datetime.now().isoformat(),
+                total_posts=user['total_posts'] + 1)
     add_xp(username, 20)
     add_coins(username, 10)
     conn.close()
@@ -215,6 +235,8 @@ def like_post(post_id):
     username = data.get("username")
     if not username:
         return jsonify({"error": "Ange användarnamn"}), 400
+    
+    create_user_if_not_exists(username)
     
     conn = get_db()
     c = conn.cursor()
@@ -239,8 +261,13 @@ def like_post(post_id):
     if author != "Anonym":
         add_xp(author, 2)
         add_coins(author, 1)
+        # Uppdatera total_likes_received för författaren
+        author_user = get_user(author)
+        if author_user:
+            update_user(author, total_likes_received=author_user['total_likes_received'] + 1)
     # Ge XP till den som gillar
     add_xp(username, 1)
+    add_coins(username, 1)
     conn.close()
     return jsonify({"likes": new_likes})
 
@@ -251,6 +278,8 @@ def add_comment(post_id):
     text = data.get("text")
     if not username or not text:
         return jsonify({"error": "Användarnamn och kommentar krävs"}), 400
+    
+    create_user_if_not_exists(username)
     
     comment = {
         "username": username,
@@ -280,7 +309,7 @@ def add_comment(post_id):
     # Uppdatera total_comments_given
     user = get_user(username)
     if user:
-        update_user(username, total_comments_given=user['total_comments_given']+1)
+        update_user(username, total_comments_given=user['total_comments_given'] + 1)
     conn.close()
     return jsonify({"message": "Kommentar tillagd"})
 
@@ -304,13 +333,16 @@ def delete_post(post_id):
 def get_user_info(username):
     user = get_user(username)
     if not user:
-        return jsonify({"error": "Användare finns inte"}), 404
+        create_user_if_not_exists(username)
+        user = get_user(username)
     active_effects = get_active_effects(username)
     user_data = dict(user)
     user_data['active_effects'] = active_effects
     # Beräkna XP till nästa level
     current_level = user_data['level']
-    xp_needed = current_level * 100 - user_data['xp']
+    xp_for_current_level = (current_level - 1) * 100
+    xp_in_level = user_data['xp'] - xp_for_current_level
+    xp_needed = 100 - xp_in_level
     user_data['xp_needed'] = max(0, xp_needed)
     return jsonify(user_data)
 
@@ -318,15 +350,21 @@ def get_user_info(username):
 def daily_reward(username):
     user = get_user(username)
     if not user:
-        return jsonify({"error": "Användare finns inte"}), 404
+        create_user_if_not_exists(username)
+        user = get_user(username)
     today = datetime.now().date().isoformat()
     if user['last_login'] == today:
-        return jsonify({"message": "Redan fått daglig belöning idag"}), 400
-    streak = user['login_streak'] + 1 if user['last_login'] == (datetime.now() - timedelta(days=1)).date().isoformat() else 1
+        return jsonify({"error": "Redan fått daglig belöning idag"}), 400
+    # Beräkna streak
+    yesterday = (datetime.now() - timedelta(days=1)).date().isoformat()
+    if user['last_login'] == yesterday:
+        streak = user['login_streak'] + 1
+    else:
+        streak = 1
     bonus = 5 + (streak - 1)  # 5,6,7...
-    add_coins(username, bonus)
-    update_user(username, last_login=today, login_streak=streak)
-    return jsonify({"coins": user['coins'] + bonus, "streak": streak})
+    new_coins = user['coins'] + bonus
+    update_user(username, last_login=today, login_streak=streak, coins=new_coins)
+    return jsonify({"coins": new_coins, "streak": streak})
 
 @app.route('/shop/buy', methods=['POST'])
 def buy_effect():
@@ -348,10 +386,14 @@ def buy_effect():
         return jsonify({"error": "Ogiltig effekt"}), 400
     
     user = get_user(username)
-    if not user or user['coins'] < prices[effect]:
+    if not user:
+        create_user_if_not_exists(username)
+        user = get_user(username)
+    
+    if user['coins'] < prices[effect]:
         return jsonify({"error": "Inte tillräckligt med coins"}), 400
     
-    # Mystery box: slumpmässig varaktighet (1-7 dagar) eller dålig?
+    # Mystery box: slumpmässig varaktighet (1-7 dagar)
     if effect == "💀 Mystery Box":
         days = random.randint(1, 7)
         expires = (datetime.now() + timedelta(days=days)).isoformat()
