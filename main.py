@@ -1,11 +1,11 @@
 import os
 import base64
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Tillåter alla domäner att prata med APIet
+CORS(app)
 
 # ---------------------------
 # Hjälpfunktioner för GitHub
@@ -66,7 +66,8 @@ def add_user(username, password):
 # ---------------------------
 @app.route('/')
 def home():
-    return jsonify({"message": "Falun Rykten 2 API är igång!", "endpoints": {"POST /login": "logga in", "POST /register": "registrera"}})
+    # Skicka HTML-filen som ligger i samma mapp
+    return send_from_directory('.', 'index.html')
 
 @app.route('/login', methods=['POST', 'OPTIONS'])
 def login():
