@@ -1,7 +1,7 @@
 {
   "simon": {
     "level": 1,
-    "xp": 0,
+    "xp": 10,
     "coins": 50,
     "last_rumor_time": 1779969143.1239343
   }
