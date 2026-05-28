@@ -5,8 +5,10 @@
     "title": "Eskil..",
     "content": "Eskil bajsade på sig",
     "date": "2026-05-28T12:02:23.465969",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "simon"
+    ],
     "comments": []
   }
 ]
