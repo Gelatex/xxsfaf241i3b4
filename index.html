@@ -3,266 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Falun Rykten 2 – 8-bit ryktesmaskin</title>
+    <title>Falun Rykten 2 – Modern ryktesmaskin</title>
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            image-rendering: pixelated;
-            font-family: 'Courier New', monospace;
         }
         body {
-            background: #0a0f0a;
-            margin: 0;
-            padding: 16px;
-            color: #b3ffaa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #1a2a3a;
+            padding: 20px;
         }
         .app-layout {
             display: flex;
-            gap: 16px;
+            gap: 24px;
             max-width: 1400px;
             margin: 0 auto;
         }
+        /* Vänster sidofält – progress */
         .left-sidebar {
-            width: 200px;
-            background: #1a2a1a;
-            border: 3px solid #5f9e5f;
-            padding: 16px 8px;
-            text-align: center;
+            width: 240px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             height: fit-content;
             position: sticky;
-            top: 16px;
+            top: 20px;
         }
+        .progress-container {
+            background: #e9ecef;
+            border-radius: 12px;
+            height: 12px;
+            margin: 12px 0;
+        }
+        .progress-fill {
+            background: #4c9aff;
+            height: 100%;
+            border-radius: 12px;
+            width: 0%;
+            transition: width 0.2s;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        /* Huvudinnehåll */
         .main-content {
             flex: 1;
-            background: #1a2a1a;
-            border: 3px solid #5f9e5f;
-            padding: 16px;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+        /* Höger sidofält – shop */
         .right-sidebar {
-            width: 260px;
-            background: #1a2a1a;
-            border: 3px solid #5f9e5f;
-            padding: 16px;
+            width: 280px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             height: fit-content;
             position: sticky;
-            top: 16px;
+            top: 20px;
         }
-        button, .tab-btn {
-            background: #2b3b2b;
-            border: 2px solid #5f9e5f;
-            color: #cfffc0;
-            font-family: monospace;
-            font-weight: bold;
-            padding: 6px 12px;
+        button {
+            background: #4c9aff;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 3px 3px 0 #0e2a0e;
-            transition: 0.05s linear;
-            margin: 4px 0;
+            transition: 0.1s;
+            font-size: 0.9rem;
         }
         button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0 #0e2a0e;
+            transform: scale(0.97);
         }
-        input, textarea {
-            background: #0f1a0f;
-            border: 2px solid #5f9e5f;
-            color: #afff9f;
-            font-family: monospace;
-            font-size: 1rem;
-            padding: 8px;
+        button.outline {
+            background: transparent;
+            border: 1px solid #4c9aff;
+            color: #4c9aff;
+        }
+        input, textarea, select {
             width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 1rem;
             margin-bottom: 12px;
+            background: #fefefe;
         }
         .rumor-card {
-            background: #1e2e1e;
-            border: 2px solid #4e8e4e;
-            margin: 16px 0;
-            padding: 12px;
-            box-shadow: 4px 4px 0 #0e1e0e;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid #edf2f7;
         }
-        /* Effekter */
-        .rumor-card.effect-glow { border: 2px solid #ffcc44; box-shadow: 0 0 12px #ffcc44, 4px 4px 0 #0e1e0e; }
-        .rumor-card.effect-luminance { border: 2px solid #ffffff; box-shadow: 0 0 20px #ffffff, 4px 4px 0 #0e1e0e; background: #2e3e2e; }
-        .rumor-card.effect-shadow { border: 2px solid #2a2a2a; box-shadow: 8px 8px 0 #000000, 0 0 0px; }
-        .rumor-card.effect-flame { border: 2px solid #ff6600; box-shadow: 0 0 15px #ff6600, 4px 4px 0 #0e1e0e; animation: flamePulse 0.5s infinite; }
-        @keyframes flamePulse { 0% { box-shadow: 0 0 5px #ff6600; } 100% { box-shadow: 0 0 20px #ffaa00; } }
-        .rumor-card.effect-crystal { border: 2px solid #88aaff; box-shadow: 0 0 20px #88aaff, inset 0 0 10px #88aaff; animation: crystal 1s ease-in-out infinite; }
-        @keyframes crystal { 0% { box-shadow: 0 0 10px #88aaff; } 50% { box-shadow: 0 0 30px #aaffff; } 100% { box-shadow: 0 0 10px #88aaff; } }
-        .rumor-card.effect-nuke { position: relative; animation: nukeShake 0.3s infinite; border: 2px solid #ff4444; box-shadow: 0 0 30px red; }
-        @keyframes nukeShake { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -2px); } 50% { transform: translate(-3px, 0px); } 75% { transform: translate(1px, 2px); } 100% { transform: translate(0,0); } }
+        /* Effekter – coola animationer */
+        .rumor-card.effect-glow { box-shadow: 0 0 20px rgba(76,154,255,0.6); border: 1px solid #4c9aff; }
+        .rumor-card.effect-luminance { box-shadow: 0 0 30px #ffffff, 0 0 10px #aaccff; background: linear-gradient(145deg, #fff, #f0f7ff); }
+        .rumor-card.effect-shadow { box-shadow: 12px 12px 0 #d0d4d8; transform: translate(-2px, -2px); }
+        .rumor-card.effect-flame { animation: flamePulse 0.6s infinite; border: 1px solid #ff884d; }
+        @keyframes flamePulse { 0% { box-shadow: 0 0 5px #ff884d; } 100% { box-shadow: 0 0 20px #ffaa44; } }
+        .rumor-card.effect-crystal { background: linear-gradient(135deg, #e8f0ff, #ffffff); border: 1px solid #88aaff; animation: crystal 1.5s infinite; }
+        @keyframes crystal { 0% { box-shadow: 0 0 10px #88aaff; } 50% { box-shadow: 0 0 25px #aaffdd; } }
+        .rumor-card.effect-nuke { animation: nukeShake 0.2s infinite; background: #fff0f0; border: 2px solid #ff4444; }
+        @keyframes nukeShake { 0% { transform: translate(1px,0); } 50% { transform: translate(-1px,0); } 100% { transform: translate(0,0); } }
         .nuke-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #ffaa00, #ff0000);
+            background: radial-gradient(circle, #ffaa44, #ff3300);
             pointer-events: none;
             z-index: 10000;
             animation: nukeBlast 0.8s forwards;
         }
-        @keyframes nukeBlast {
-            0% { opacity: 1; transform: scale(0); }
-            100% { opacity: 0; transform: scale(10); display: none; }
-        }
-        .rumor-title { font-size: 1.4rem; font-weight: bold; color: #ffcc77; word-break: break-word; }
-        .rumor-meta { font-size: 0.8rem; color: #8fbf8f; cursor: pointer; text-decoration: underline; }
-        .progress-bar-container {
-            background: #0e1a0e;
-            border: 2px solid #5f9e5f;
-            height: 24px;
-            margin: 12px 0;
-        }
-        .progress-bar-fill {
-            background: #6fbf6f;
-            height: 100%;
-            width: 0%;
-            transition: width 0.2s;
-        }
-        .shop-item {
-            background: #0e1a0e;
-            margin: 8px 0;
-            padding: 8px;
-            border: 1px solid #5f9e5f;
-        }
+        @keyframes nukeBlast { 0% { opacity: 1; transform: scale(0); } 100% { opacity: 0; transform: scale(12); display: none; } }
+        .rumor-title { font-size: 1.4rem; font-weight: 700; color: #1e2f3e; margin-bottom: 6px; }
+        .rumor-meta { font-size: 0.8rem; color: #6c757d; margin-bottom: 12px; cursor: pointer; text-decoration: underline; }
+        .like-comment { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+        .comment-section { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+        .comment { background: #f8fafc; padding: 10px; border-radius: 16px; margin: 8px 0; }
+        .emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+        .emoji-btn { background: #eef2ff; border: none; font-size: 1.2rem; padding: 6px 10px; border-radius: 40px; cursor: pointer; }
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            font-size: 2rem;
             flex-direction: column;
         }
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 6px solid #5f9e5f;
-            border-top-color: #b3ffaa;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .spinner { width: 48px; height: 48px; border: 4px solid #ddd; border-top-color: #4c9aff; border-radius: 50%; animation: spin 0.6s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .hidden { display: none; }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 32px; padding: 24px; z-index: 10002; width: 320px; text-align: center; box-shadow: 0 20px 35px rgba(0,0,0,0.2); }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .emoji-picker {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 8px 0;
-        }
-        .emoji-btn {
-            background: #2b3b2b;
-            border: 1px solid #5f9e5f;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 4px 8px;
-        }
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1a2a1a;
-            border: 4px solid #5f9e5f;
-            padding: 20px;
-            z-index: 10001;
-            width: 300px;
-            text-align: center;
-        }
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-        }
+        .badge { background: #eef2ff; padding: 4px 12px; border-radius: 40px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
+
 <div id="loadingOverlay" class="loading-overlay hidden">
     <div class="spinner"></div>
-    <div style="margin-top: 16px;">LADDAR...</div>
+    <div style="margin-top: 16px;">Laddar...</div>
 </div>
 
 <div id="app" class="app-layout" style="display: none;">
-    <!-- Vänster: progress bar -->
+    <!-- Vänster -->
     <div class="left-sidebar">
-        <h3>⭐ NIVÅ <span id="levelNum">1</span></h3>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="xpProgressFill"></div>
-        </div>
+        <h3>⭐ Din nivå</h3>
+        <div style="font-size: 2rem; font-weight: bold;" id="levelNum">1</div>
+        <div class="progress-container"><div class="progress-fill" id="xpProgressFill"></div></div>
         <div>XP: <span id="currentXp">0</span> / <span id="nextLevelXp">100</span></div>
-        <div>🪙 MYNT: <span id="userCoinsSide">0</span></div>
-        <div>📢 DINA RYKTEN: <span id="userRumorsCount">0</span></div>
+        <div class="stat-box">🪙 Mynt: <strong id="userCoinsSide">0</strong></div>
+        <div class="stat-box">📢 Dina rykten: <strong id="userRumorsCount">0</strong></div>
     </div>
 
+    <!-- Mitten -->
     <div class="main-content">
         <div class="flex-between">
-            <h1>🐺 FALU RYKTEN 2</h1>
-            <button id="logoutBtn">🚪 LOGGA UT</button>
+            <h1>🐺 Falun Rykten 2</h1>
+            <button id="logoutBtn" class="outline">🚪 Logga ut</button>
         </div>
+
         <!-- Skapa rykte -->
-        <div style="border: 2px solid #5f9e5f; padding: 12px; margin-bottom: 20px;">
-            <h3>✍️ SPRID ETT RYKTE</h3>
-            <input type="text" id="rumorTitle" placeholder="Titel">
-            <textarea id="rumorContent" placeholder="Vad har du hört?..."></textarea>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+        <div style="background: #f8fafc; border-radius: 24px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 12px;">✍️ Sprid ett rykte</h3>
+            <input type="text" id="rumorTitle" placeholder="Rubrik">
+            <textarea id="rumorContent" rows="3" placeholder="Vad har du hört?..."></textarea>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
                 <select id="rumorEmojiSelect"><option value="">Ingen emoji</option></select>
                 <select id="rumorEffectSelect"><option value="">Ingen effekt</option></select>
             </div>
-            <button id="postRumorBtn">📢 SKICKA RYKTE (+10 XP, +1🪙)</button>
-            <div id="rumorPostMessage" style="margin-top:6px"></div>
+            <button id="postRumorBtn">📢 Publicera (+10 XP, +1🪙)</button>
+            <div id="rumorPostMessage" style="margin-top: 8px; font-size:0.9rem"></div>
         </div>
-        <h3>📜 ALLA RYKTEN</h3>
+
+        <h3>📜 Alla rykten</h3>
         <div id="rumorsList"></div>
     </div>
 
-    <!-- Höger: shop -->
+    <!-- Höger shop -->
     <div class="right-sidebar">
-        <h3>🛒 SHOP</h3>
-        <div class="shop-emojis">
-            <h4>😀 EMOJIS</h4>
-            <div id="emojiShopList"></div>
-        </div>
-        <div class="shop-effects">
-            <h4>✨ EFFEKTER</h4>
-            <div id="effectShopList"></div>
-        </div>
+        <h3>🛒 Butik</h3>
+        <div id="emojiShopList" style="margin-bottom: 24px;"></div>
+        <div id="effectShopList"></div>
     </div>
 </div>
 
-<!-- Login/register vy -->
-<div id="loginView" class="app-layout" style="justify-content: center;">
-    <div style="background: #1a2a1a; border: 4px solid #5f9e5f; padding: 32px; width: 400px; text-align: center;">
-        <h1>🐺 FALU RYKTEN 2</h1>
-        <div>
-            <button id="showLoginBtn" class="tab-btn active">LOGGA IN</button>
-            <button id="showRegisterBtn" class="tab-btn">SKAPA KONTO</button>
+<!-- Loginvy -->
+<div id="loginView" style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+    <div style="background: white; border-radius: 32px; padding: 40px; width: 400px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+        <h1>🐺 Falun Rykten 2</h1>
+        <div style="display: flex; gap: 12px; margin: 20px 0;">
+            <button id="showLoginBtn" class="active" style="background:#4c9aff;">Logga in</button>
+            <button id="showRegisterBtn" class="outline">Skapa konto</button>
         </div>
         <div id="loginFormDiv">
             <input type="text" id="loginUsername" placeholder="Användarnamn"><br>
             <input type="password" id="loginPassword" placeholder="Lösenord"><br>
             <button id="doLoginBtn">🎮 Logga in</button>
-            <div id="loginMessage" style="margin-top:10px"></div>
+            <div id="loginMessage" style="margin-top: 12px; color: #dc3545;"></div>
         </div>
         <div id="registerFormDiv" style="display:none">
-            <input type="text" id="regUsername" placeholder="Användarnamn (minst 3)"><br>
-            <input type="password" id="regPassword" placeholder="Lösenord (minst 4)"><br>
+            <input type="text" id="regUsername" placeholder="Användarnamn (minst 3 tecken)"><br>
+            <input type="password" id="regPassword" placeholder="Lösenord (minst 4 tecken)"><br>
             <button id="doRegisterBtn">📝 Skapa konto</button>
-            <div id="regMessage" style="margin-top:10px"></div>
+            <div id="regMessage" style="margin-top: 12px;"></div>
         </div>
+        <p style="margin-top: 24px; font-size:0.8rem; color:#6c757d;">Demo: Ebbe (lösenord valfritt) – 1.000.000 coins, level 999</p>
     </div>
 </div>
 
@@ -293,26 +263,10 @@
         { id: "nuke", name: "Nuke", price: 500 }
     ];
 
-    // ---------- Loading overlay ----------
-    function showLoading() {
-        loadingCounter++;
-        document.getElementById('loadingOverlay').classList.remove('hidden');
-    }
-    function hideLoading() {
-        loadingCounter--;
-        if (loadingCounter <= 0) {
-            loadingCounter = 0;
-            document.getElementById('loadingOverlay').classList.add('hidden');
-        }
-    }
-    async function withLoading(promise) {
-        showLoading();
-        try {
-            return await promise;
-        } finally {
-            hideLoading();
-        }
-    }
+    // ---------- Loading ----------
+    function showLoading() { loadingCounter++; document.getElementById('loadingOverlay').classList.remove('hidden'); }
+    function hideLoading() { loadingCounter--; if (loadingCounter <= 0) { loadingCounter = 0; document.getElementById('loadingOverlay').classList.add('hidden'); } }
+    async function withLoading(promise) { showLoading(); try { return await promise; } finally { hideLoading(); } }
 
     // ---------- API ----------
     async function apiCall(endpoint, method, body) {
@@ -323,7 +277,6 @@
         return { status: res.status, data };
     }
 
-    // ---------- Data ----------
     async function loadUserProfile() {
         if (!currentUser) return;
         const { data } = await apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET');
@@ -338,6 +291,7 @@
         if (Array.isArray(data)) {
             rumorsData = data;
             renderRumors();
+            updateUI(); // uppdaterar räknaren för egna rykten
         }
     }
 
@@ -383,22 +337,22 @@
         const effectContainer = document.getElementById('effectShopList');
         const ownedEmojis = userProfile.owned_emojis || [];
         const ownedEffects = userProfile.owned_effects || [];
-        emojiContainer.innerHTML = '';
+        emojiContainer.innerHTML = '<h4>😀 Emojis</h4>';
         emojiShopItems.forEach(item => {
             const owned = ownedEmojis.includes(item.id);
             emojiContainer.innerHTML += `
-                <div class="shop-item">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0; padding:6px; background:#f8fafc; border-radius:16px;">
                     <span>${item.id} ${item.name} (${item.price}🪙)</span>
                     ${!owned ? `<button class="buyEmojiBtn" data-emoji="${item.id}" data-price="${item.price}">Köp</button>` : '<span>✅ Ägd</span>'}
                 </div>
             `;
         });
-        effectContainer.innerHTML = '';
+        effectContainer.innerHTML = '<h4>✨ Effekter</h4>';
         effectShopItems.forEach(item => {
             const owned = ownedEffects.includes(item.id);
             effectContainer.innerHTML += `
-                <div class="shop-item">
-                    <span>✨ ${item.name} (${item.price}🪙)</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 0; padding:6px; background:#f8fafc; border-radius:16px;">
+                    <span>${item.name} (${item.price}🪙)</span>
                     ${!owned ? `<button class="buyEffectBtn" data-effect="${item.id}" data-price="${item.price}">Köp</button>` : '<span>✅ Ägd</span>'}
                 </div>
             `;
@@ -425,7 +379,6 @@
         }
     }
 
-    // Nuke-animation global
     function triggerNukeAnimation() {
         const overlay = document.createElement('div');
         overlay.className = 'nuke-overlay';
@@ -464,18 +417,17 @@
     }
 
     function showUserProfile(username) {
-        const user = rumorsData.find(r => r.author === username)?.author || username;
         fetch(`/user_data?username=${encodeURIComponent(username)}`).then(res => res.json()).then(profile => {
             const modalHtml = `
                 <div id="profileModalBackdrop" class="modal-backdrop"></div>
                 <div class="modal">
                     <h3>${profile.username}</h3>
-                    <p>⭐ Level: ${profile.level}</p>
+                    <p>⭐ Nivå: ${profile.level}</p>
                     <p>✨ XP: ${profile.xp}</p>
-                    <p>🪙 Coins: ${profile.coins}</p>
-                    <p>😀 Emojis: ${(profile.owned_emojis || []).join(', ') || 'inga'}</p>
+                    <p>🪙 Mynt: ${profile.coins}</p>
+                    <p>😀 Emojis: ${(profile.owned_emojis || []).join(' ') || 'inga'}</p>
                     <p>✨ Effekter: ${(profile.owned_effects || []).join(', ') || 'inga'}</p>
-                    <button id="closeProfileBtn">Stäng</button>
+                    <button id="closeProfileBtn" style="margin-top:12px;">Stäng</button>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -489,14 +441,12 @@
     function renderRumors() {
         const container = document.getElementById('rumorsList');
         if (!rumorsData.length) {
-            container.innerHTML = '<div class="rumor-card">Inga rykten ännu. Bli först!</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px;">Inga rykten än. Bli först!</div>';
             return;
         }
         let html = '';
         for (let r of rumorsData) {
             const dateStr = new Date(r.date).toLocaleString();
-            const liked = (r.liked_by || []).includes(currentUser);
-            const downvoted = (r.downvoted_by || []).includes(currentUser);
             const effectClass = r.effect ? `effect-${r.effect}` : '';
             const emojiPrefix = r.emoji ? `${r.emoji} ` : '';
             html += `
@@ -511,10 +461,10 @@
                     </div>
                     <div class="comment-section" id="comments-${r.id}">
                         ${(r.comments || []).map(c => `<div class="comment"><strong onclick="showUserProfile('${escapeHtml(c.user)}')" style="cursor:pointer;">${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${new Date(c.date).toLocaleString()}</span></div>`).join('')}
-                        <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
-                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar..." style="flex:1">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar..." style="flex:1;">
                             <div class="emoji-picker" id="emojiPicker-${r.id}">
-                                ${emojiShopItems.map(e => `<button class="emoji-btn" data-emoji="${e.id}">${e.id}</button>`).join('')}
+                                ${(userProfile.owned_emojis || []).map(e => `<button class="emoji-btn" data-emoji="${e}">${e}</button>`).join('')}
                             </div>
                             <button class="comment-btn" data-id="${r.id}">Skicka</button>
                         </div>
@@ -523,34 +473,25 @@
             `;
         }
         container.innerHTML = html;
-        // Events
         container.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = parseInt(btn.getAttribute('data-id'));
-                await likeRumor(id);
-            });
+            btn.addEventListener('click', async () => { await likeRumor(parseInt(btn.getAttribute('data-id'))); });
         });
         container.querySelectorAll('.downvote-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const id = parseInt(btn.getAttribute('data-id'));
-                if (confirm('Kosta 10 coins att nedrösta. Fortsätta?')) {
-                    await downvoteRumor(id);
-                }
+                if (confirm('Kosta 10 coins att nedrösta. Fortsätta?'))
+                    await downvoteRumor(parseInt(btn.getAttribute('data-id')));
             });
         });
         container.querySelectorAll('.comment-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.getAttribute('data-id'));
                 const input = document.getElementById(`commentInput-${id}`);
-                let text = input.value.trim();
-                if (text) {
-                    await commentRumor(id, text);
-                    input.value = '';
-                }
+                const text = input.value.trim();
+                if (text) await commentRumor(id, text);
+                input.value = '';
             });
         });
-        // Emoji picker för varje kommentar
-        document.querySelectorAll('.emoji-btn').forEach(btn => {
+        container.querySelectorAll('.emoji-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const emoji = btn.getAttribute('data-emoji');
                 const commentDiv = btn.closest('.comment-section');
@@ -558,13 +499,8 @@
                 input.value += emoji;
             });
         });
-        // Om något rykte har nuke-effekt, trigga animation (endast för ryktet som visas)
-        for (let r of rumorsData) {
-            if (r.effect === 'nuke') {
-                triggerNukeAnimation();
-                break;
-            }
-        }
+        // Nuke-animation om något rykte har nuke-effekt
+        if (rumorsData.some(r => r.effect === 'nuke')) triggerNukeAnimation();
     }
 
     function escapeHtml(str) {
@@ -591,9 +527,11 @@
         const { data } = await withLoading(apiCall('/register', 'POST', { username, password }));
         if (data.success) {
             document.getElementById('regMessage').innerHTML = 'Konto skapat! Logga in nu.';
+            document.getElementById('regMessage').style.color = '#28a745';
             setTimeout(() => document.getElementById('showLoginBtn').click(), 1500);
         } else {
             document.getElementById('regMessage').innerHTML = data.message;
+            document.getElementById('regMessage').style.color = '#dc3545';
         }
     }
 
