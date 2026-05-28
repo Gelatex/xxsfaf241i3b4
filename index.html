@@ -2,114 +2,130 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falun Rykten 2 - 8-bit Ryktesmaskin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Falun Rykten 2 – 8-bit ryktesmaskin</title>
     <style>
         * {
             box-sizing: border-box;
-            image-rendering: crisp-edges;
             image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
         body {
-            background: #0c1a0f;
-            background-image: repeating-linear-gradient(0deg, #1a3a1a 0px, #1a3a1a 2px, #0c1a0f 2px, #0c1a0f 8px);
-            font-family: 'Courier New', 'VT323', monospace;
+            background: #0a0f0a;
+            font-family: 'Courier New', 'MS Gothic', monospace;
             margin: 0;
             padding: 20px;
-            color: #9bff9b;
+            color: #b3ffaa;
         }
-        .pixel-container {
+        /* 8-bit retro container */
+        .container {
             max-width: 900px;
             margin: 0 auto;
-            background: #000000aa;
-            border: 4px solid #6f9e6f;
-            box-shadow: 8px 8px 0 #2a4a2a;
-            padding: 20px;
-            backdrop-filter: blur(1px);
+            background: #1a2a1a;
+            border: 4px solid #5f9e5f;
+            box-shadow: 8px 8px 0 #0a1f0a;
+            padding: 16px;
         }
-        h1, h2 {
-            text-shadow: 3px 3px 0 #1a3a1a;
-            letter-spacing: 2px;
-            font-size: 2rem;
-            margin: 0 0 10px 0;
-        }
-        button, .pixel-button {
-            background: #2a4a2a;
-            border: none;
-            color: #bfffbf;
+        h1, h2, h3 {
             font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 0 #0a2a0a;
+            letter-spacing: 2px;
+        }
+        h1 {
+            font-size: 2rem;
+            background: #2a3a2a;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 2px solid #6fae6f;
+            margin-top: 0;
+        }
+        button, .tab-btn, .rumor-btn {
+            background: #2b3b2b;
+            border: 2px solid #5f9e5f;
+            color: #cfffc0;
+            font-family: monospace;
             font-weight: bold;
             font-size: 1rem;
-            padding: 8px 16px;
-            margin: 4px;
+            padding: 6px 12px;
             cursor: pointer;
-            box-shadow: 3px 3px 0 #0a2a0a;
+            box-shadow: 3px 3px 0 #0e2a0e;
             transition: 0.05s linear;
-            text-transform: uppercase;
         }
-        button:active {
+        button:active, .tab-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0 #0a2a0a;
+            box-shadow: 1px 1px 0 #0e2a0e;
         }
         input, textarea {
-            background: #1a2a1a;
-            border: 2px solid #6f9e6f;
-            color: #bfffbf;
-            font-family: 'Courier New', monospace;
+            background: #0f1a0f;
+            border: 2px solid #5f9e5f;
+            color: #afff9f;
+            font-family: monospace;
+            font-size: 1rem;
             padding: 8px;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .rumor-card {
-            background: #0a1a0a;
-            border: 2px solid #6f9e6f;
-            margin: 15px 0;
+            background: #1e2e1e;
+            border: 2px solid #4e8e4e;
+            margin: 16px 0;
             padding: 12px;
-            box-shadow: 4px 4px 0 #1a3a1a;
+            box-shadow: 4px 4px 0 #0e1e0e;
         }
         .rumor-title {
             font-size: 1.4rem;
             font-weight: bold;
-            color: #ffcc66;
+            color: #ffcc77;
+            border-bottom: 1px dashed #7fae7f;
         }
         .rumor-meta {
             font-size: 0.8rem;
-            color: #7a9e7a;
+            color: #8fbf8f;
+            margin: 5px 0;
         }
-        .like-btn, .comment-btn {
-            background: #3a5a3a;
-            font-size: 0.8rem;
-            padding: 4px 12px;
-            margin-top: 8px;
+        .rumor-content {
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .like-comment {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
         .comment-section {
             margin-top: 12px;
-            border-top: 1px dashed #6f9e6f;
+            border-top: 1px solid #4e7e4e;
             padding-top: 8px;
         }
         .comment {
-            background: #1e2e1e;
+            background: #122212;
             margin: 6px 0;
             padding: 6px;
             font-size: 0.85rem;
         }
-        .status-bar {
-            background: #0a0a0a;
-            border: 2px solid #6f9e6f;
-            padding: 10px;
+        .user-info {
+            background: #0e1a0e;
+            padding: 8px;
+            border: 2px solid #5f9e5f;
             margin-bottom: 20px;
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         .stat {
-            background: #1a2a1a;
-            padding: 6px 12px;
-            font-weight: bold;
+            background: #1f2f1f;
+            padding: 4px 8px;
+            margin: 2px;
+            display: inline-block;
+        }
+        .cooldown {
+            color: #ffaa66;
         }
         .error {
-            color: #ffaa99;
-            background: #441111;
+            color: #ff8866;
+            background: #331100;
             padding: 6px;
         }
         .success {
@@ -118,167 +134,222 @@
         .hidden {
             display: none;
         }
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #9bff9b;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-right: 6px;
+        hr {
+            border-color: #4e8e4e;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
     </style>
 </head>
 <body>
-<div class="pixel-container" id="app">
+<div class="container" id="app">
     <!-- Inloggningsvy -->
     <div id="loginView">
-        <h1>🐺 FALU RYKTEN 2</h1>
-        <div class="sub">⚡ 8-BIT RYKTESMASKIN ⚡</div>
-        <div style="display: flex; gap: 10px; margin: 20px 0;">
-            <button id="showLoginBtn">🔐 LOGGA IN</button>
-            <button id="showRegisterBtn">✨ SKAPA KONTO</button>
+        <h1>🐺 FALU RYKTEN 2 🕹️</h1>
+        <div class="tab-buttons">
+            <button id="showLoginBtn" class="tab-btn active">🔐 LOGGA IN</button>
+            <button id="showRegisterBtn" class="tab-btn">✨ SKAPA KONTO</button>
         </div>
         <div id="loginFormDiv">
-            <h2>LOGGA IN</h2>
-            <input type="text" id="loginUsername" placeholder="ANVÄNDARNAMN">
-            <input type="password" id="loginPassword" placeholder="LÖSENORD">
-            <button id="doLoginBtn">🎮 START</button>
-            <div id="loginMsg" class="error hidden"></div>
+            <h3>Logga in</h3>
+            <input type="text" id="loginUsername" placeholder="Användarnamn"><br>
+            <input type="password" id="loginPassword" placeholder="Lösenord"><br>
+            <button id="doLoginBtn">🎮 Logga in</button>
+            <div id="loginMessage" class="error" style="margin-top:10px"></div>
         </div>
-        <div id="registerFormDiv" class="hidden">
-            <h2>SKAPA KONTO</h2>
-            <input type="text" id="regUsername" placeholder="ANVÄNDARNAMN (minst 3)">
-            <input type="password" id="regPassword" placeholder="LÖSENORD (minst 4)">
-            <button id="doRegisterBtn">📝 SKAPA</button>
-            <div id="regMsg" class="error hidden"></div>
+        <div id="registerFormDiv" style="display:none">
+            <h3>Skapa konto</h3>
+            <input type="text" id="regUsername" placeholder="Användarnamn (minst 3 tecken)"><br>
+            <input type="password" id="regPassword" placeholder="Lösenord (minst 4 tecken)"><br>
+            <button id="doRegisterBtn">📝 Skapa konto</button>
+            <div id="regMessage" class="error" style="margin-top:10px"></div>
         </div>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboardView" class="hidden">
-        <div class="status-bar">
-            <div class="stat">👤 <span id="statUsername"></span></div>
-            <div class="stat">⭐ LEVEL <span id="statLevel"></span></div>
-            <div class="stat">✨ XP <span id="statXp"></span>/<span id="statXpNext"></span></div>
-            <div class="stat">🪙 COINS <span id="statCoins"></span></div>
-            <div class="stat">⏱️ COOLDOWN <span id="statCooldown"></span>s</div>
-        </div>
-        <div>
+    <!-- Dashboard (syns efter inloggning) -->
+    <div id="dashboardView" style="display:none">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h1>🐺 FALU RYKTEN 2</h1>
             <button id="logoutBtn">🚪 LOGGA UT</button>
-            <button id="refreshBtn">🔄 UPPDATERA</button>
         </div>
-        <hr>
-        <h2>📢 SKAPA RYKTE</h2>
-        <input type="text" id="rumorTitle" placeholder="TITEL" maxlength="60">
-        <textarea id="rumorContent" rows="3" placeholder="Vad är ryktet?" maxlength="500"></textarea>
-        <button id="createRumorBtn">🔥 SPRID RYKTE (+10 XP)</button>
-        <div id="createMsg" class="error hidden"></div>
-        <hr>
-        <h2>💬 ALLA RYKTEN</h2>
+        <!-- Användarinfo -->
+        <div class="user-info" id="userStats">
+            <span class="stat">⭐ NIVÅ: <span id="userLevel">1</span></span>
+            <span class="stat">✨ XP: <span id="userXp">0</span></span>
+            <span class="stat">🪙 MYNT: <span id="userCoins">0</span></span>
+            <span class="stat cooldown">⏳ COOLDOWN: <span id="cooldownSec">0</span> s</span>
+        </div>
+
+        <!-- Skapa nytt rykte -->
+        <div style="background: #1a2a1a; border: 2px solid #5f9e5f; padding: 12px; margin-bottom: 20px;">
+            <h3>✍️ SPRID ETT RYKTE</h3>
+            <input type="text" id="rumorTitle" placeholder="Titel" maxlength="100">
+            <textarea id="rumorContent" placeholder="Vad har du hört?..."></textarea>
+            <button id="postRumorBtn">📢 SKICKA RYKTE (+10 XP, 1🪙)</button>
+            <div id="rumorPostMessage" class="error" style="margin-top:6px"></div>
+        </div>
+
+        <!-- Lista med rykten -->
+        <h3>📜 ALLA RYKTEN</h3>
         <div id="rumorsList"></div>
     </div>
 </div>
 
 <script>
+    // --------------------------------------------------------------
+    // Globals
     let currentUser = null;
-    let autoRefresh = null;
+    let rumorsData = [];
+    let userProfile = { level: 1, xp: 0, coins: 0, last_rumor_time: 0 };
+    let cooldownInterval = null;
 
-    // API-anrop som hanterar GET korrekt (utan body)
-    async function apiCall(endpoint, method, body = null) {
-        const options = {
+    // Hjälpfunktion för fetch (anropar samma server)
+    async function apiCall(endpoint, method, body) {
+        const opts = {
             method: method,
             headers: { 'Content-Type': 'application/json' }
         };
-        if (body && method !== 'GET' && method !== 'HEAD') {
-            options.body = JSON.stringify(body);
-        }
-        const response = await fetch(endpoint, options);
-        let data;
-        try {
-            data = await response.json();
-        } catch(e) {
-            data = { success: false, message: "Ogiltigt svar från servern" };
-        }
-        return data;
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(endpoint, opts);
+        const data = await res.json();
+        return { status: res.status, data };
     }
 
-    async function refreshUserStats() {
+    // Ladda användarprofil
+    async function loadUserProfile() {
         if (!currentUser) return;
-        const data = await apiCall('/get_user', 'POST', { username: currentUser });
-        if (data && typeof data.level !== 'undefined') {
-            document.getElementById('statLevel').innerText = data.level;
-            document.getElementById('statXp').innerText = data.xp;
-            document.getElementById('statXpNext').innerText = data.level * 100;
-            document.getElementById('statCoins').innerText = data.coins;
-            document.getElementById('statCooldown').innerText = data.cooldown_seconds;
+        const { data } = await apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET');
+        if (data && typeof data === 'object') {
+            userProfile = data;
+            document.getElementById('userLevel').innerText = userProfile.level || 1;
+            document.getElementById('userXp').innerText = userProfile.xp || 0;
+            document.getElementById('userCoins').innerText = userProfile.coins || 0;
+            updateCooldownDisplay();
         }
-        return data;
     }
 
+    // Beräkna cooldown (baserat på level)
+    function getCooldownSeconds(level) {
+        let cd = 60 - (level-1) * 2;
+        if (cd < 10) cd = 10;
+        return cd;
+    }
+
+    function updateCooldownDisplay() {
+        const level = userProfile.level || 1;
+        const cdSec = getCooldownSeconds(level);
+        document.getElementById('cooldownSec').innerText = cdSec;
+        // Om vi vill ha nedräkning senare
+    }
+
+    // Ladda alla rykten och rendera
     async function loadRumors() {
-        if (!currentUser) return;
-        const data = await apiCall('/get_rumors', 'GET');
-        const rumors = data.rumors || [];
+        const { data } = await apiCall('/rumors', 'GET');
+        if (Array.isArray(data)) {
+            rumorsData = data;
+            renderRumors();
+        }
+    }
+
+    // Rendera rykten med likes & kommentarer
+    function renderRumors() {
         const container = document.getElementById('rumorsList');
-        container.innerHTML = '';
-        for (let r of rumors) {
-            const card = document.createElement('div');
-            card.className = 'rumor-card';
-            const date = new Date(r.timestamp * 1000).toLocaleString();
-            card.innerHTML = `
-                <div class="rumor-title">📢 ${escapeHtml(r.title)}</div>
-                <div class="rumor-meta">av ${escapeHtml(r.author)} • ${date} • ❤️ ${r.likes} likes</div>
-                <div class="rumor-content">${escapeHtml(r.content)}</div>
-                <div>
-                    <button class="like-btn" data-id="${r.id}" data-author="${r.author}">❤️ GILLA (+2 XP)</button>
-                    <button class="comment-btn" data-id="${r.id}">💬 KOMMENTERA</button>
-                </div>
-                <div class="comment-section" id="comments-${r.id}">
-                    ${r.comments.map(c => `<div class="comment"><strong>${escapeHtml(c.author)}:</strong> ${escapeHtml(c.text)}</div>`).join('')}
+        if (!container) return;
+        if (rumorsData.length === 0) {
+            container.innerHTML = '<div class="rumor-card">Inga rykten ännu. Bli först med att sprida ett!</div>';
+            return;
+        }
+        let html = '';
+        for (let r of rumorsData) {
+            const dateStr = new Date(r.date).toLocaleString();
+            const likedByUser = r.liked_by && r.liked_by.includes(currentUser);
+            html += `
+                <div class="rumor-card" data-id="${r.id}">
+                    <div class="rumor-title">📢 ${escapeHtml(r.title)}</div>
+                    <div class="rumor-meta">Av: ${escapeHtml(r.author)} | ${dateStr}</div>
+                    <div class="rumor-content">${escapeHtml(r.content)}</div>
+                    <div class="like-comment">
+                        <button class="like-btn" data-id="${r.id}">❤️ ${r.likes || 0} gilla</button>
+                        <span>💬 ${(r.comments || []).length} kommentarer</span>
+                    </div>
+                    <div class="comment-section">
+                        <div class="comment-list" id="comments-${r.id}">
+            `;
+            // Visa befintliga kommentarer
+            const comments = r.comments || [];
+            for (let c of comments) {
+                const commentDate = new Date(c.date).toLocaleString();
+                html += `<div class="comment"><strong>${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${commentDate}</span></div>`;
+            }
+            html += `
+                        </div>
+                        <div style="display:flex; gap:6px; margin-top:8px;">
+                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar..." style="flex:1">
+                            <button class="comment-btn" data-id="${r.id}">Skicka</button>
+                        </div>
+                    </div>
                 </div>
             `;
-            container.appendChild(card);
         }
-        // Bind like-knappar
-        document.querySelectorAll('.like-btn').forEach(btn => {
+        container.innerHTML = html;
+        // Binda events för like och kommentar (delegation)
+        container.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const rumorId = parseInt(btn.getAttribute('data-id'));
-                const result = await apiCall('/like_rumor', 'POST', { rumor_id: rumorId, username: currentUser });
-                if (result.success) {
-                    if (result.user) updateUserStatsFromData(result.user);
-                    loadRumors();
-                } else {
-                    alert(result.message || "Kunde inte gilla");
-                }
+                await likeRumor(rumorId);
             });
         });
-        // Bind kommentar-knappar
-        document.querySelectorAll('.comment-btn').forEach(btn => {
+        container.querySelectorAll('.comment-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const rumorId = parseInt(btn.getAttribute('data-id'));
-                const commentText = prompt("Skriv din kommentar (max 200 tecken):");
-                if (commentText && commentText.trim()) {
-                    const result = await apiCall('/comment_rumor', 'POST', { rumor_id: rumorId, username: currentUser, comment: commentText });
-                    if (result.success) {
-                        if (result.user) updateUserStatsFromData(result.user);
-                        loadRumors();
-                    } else {
-                        alert(result.message || "Kunde inte kommentera");
-                    }
+                const input = document.getElementById(`commentInput-${rumorId}`);
+                const text = input.value.trim();
+                if (text) {
+                    await commentRumor(rumorId, text);
+                    input.value = '';
                 }
             });
         });
     }
 
-    function updateUserStatsFromData(userData) {
-        document.getElementById('statLevel').innerText = userData.level;
-        document.getElementById('statXp').innerText = userData.xp;
-        document.getElementById('statXpNext').innerText = userData.level * 100;
-        document.getElementById('statCoins').innerText = userData.coins;
-        document.getElementById('statCooldown').innerText = userData.cooldown_seconds;
+    async function likeRumor(rumorId) {
+        const { data, status } = await apiCall('/like_rumor', 'POST', { username: currentUser, rumor_id: rumorId });
+        if (data.success) {
+            await loadRumors();
+            await loadUserProfile(); // uppdatera XP
+        } else {
+            showTemporaryMessage(data.message || 'Kunde inte gilla', true);
+        }
+    }
+
+    async function commentRumor(rumorId, text) {
+        const { data } = await apiCall('/comment_rumor', 'POST', { username: currentUser, rumor_id: rumorId, text });
+        if (data.success) {
+            await loadRumors();
+            await loadUserProfile(); // XP för kommentar
+        } else {
+            alert(data.message);
+        }
+    }
+
+    async function createRumor(title, content) {
+        const { data, status } = await apiCall('/create_rumor', 'POST', { username: currentUser, title, content });
+        if (data.success) {
+            document.getElementById('rumorTitle').value = '';
+            document.getElementById('rumorContent').value = '';
+            await loadRumors();
+            await loadUserProfile();
+            document.getElementById('rumorPostMessage').innerText = '✅ Rykte publicerat! +10 XP, +1 🪙';
+            document.getElementById('rumorPostMessage').className = 'success';
+            setTimeout(() => {
+                document.getElementById('rumorPostMessage').innerText = '';
+            }, 3000);
+        } else {
+            document.getElementById('rumorPostMessage').innerText = data.message || 'Fel vid publicering';
+            document.getElementById('rumorPostMessage').className = 'error';
+        }
     }
 
     function escapeHtml(str) {
@@ -288,121 +359,128 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
     }
 
-    // Login
-    document.getElementById('doLoginBtn').addEventListener('click', async () => {
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const msgDiv = document.getElementById('loginMsg');
-        msgDiv.classList.add('hidden');
-        if (!username || !password) {
-            msgDiv.innerText = "Fyll i båda fälten";
-            msgDiv.classList.remove('hidden');
-            return;
+    function showTemporaryMessage(msg, isError) {
+        const msgDiv = document.getElementById('rumorPostMessage');
+        if (msgDiv) {
+            msgDiv.innerText = msg;
+            msgDiv.className = isError ? 'error' : 'success';
+            setTimeout(() => { msgDiv.innerText = ''; }, 3000);
+        } else {
+            alert(msg);
         }
-        const res = await apiCall('/login', 'POST', { username, password });
-        if (res.success) {
+    }
+
+    // Inloggning
+    async function login(username, password) {
+        const { data, status } = await apiCall('/login', 'POST', { username, password });
+        if (data.success) {
             currentUser = username;
-            document.getElementById('statUsername').innerText = username;
-            updateUserStatsFromData({ level: res.level, xp: res.xp, coins: res.coins, cooldown_seconds: res.cooldown_seconds });
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.remove('hidden');
+            localStorage.setItem('falunUser', username);
+            await loadUserProfile();
             await loadRumors();
-            if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (currentUser) loadRumors(); }, 15000);
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+            startCooldownTimer();
         } else {
-            msgDiv.innerText = res.message || "Inloggning misslyckades";
-            msgDiv.classList.remove('hidden');
+            document.getElementById('loginMessage').innerText = data.message;
         }
-    });
+    }
 
-    // Register
-    document.getElementById('doRegisterBtn').addEventListener('click', async () => {
-        const username = document.getElementById('regUsername').value.trim();
-        const password = document.getElementById('regPassword').value;
-        const msgDiv = document.getElementById('regMsg');
-        msgDiv.classList.add('hidden');
-        if (username.length < 3) {
-            msgDiv.innerText = "Användarnamn minst 3 tecken";
-            msgDiv.classList.remove('hidden');
-            return;
-        }
-        if (password.length < 4) {
-            msgDiv.innerText = "Lösenord minst 4 tecken";
-            msgDiv.classList.remove('hidden');
-            return;
-        }
-        const res = await apiCall('/register', 'POST', { username, password });
-        if (res.success) {
-            alert("Konto skapat! Logga in nu.");
-            document.getElementById('showLoginBtn').click();
-            document.getElementById('loginUsername').value = username;
-            document.getElementById('loginPassword').value = password;
+    async function register(username, password) {
+        const { data } = await apiCall('/register', 'POST', { username, password });
+        if (data.success) {
+            document.getElementById('regMessage').innerText = 'Konto skapat! Logga in nu.';
+            document.getElementById('regMessage').className = 'success';
+            setTimeout(() => {
+                document.getElementById('showLoginBtn').click();
+            }, 1500);
         } else {
-            msgDiv.innerText = res.message || "Kunde inte skapa konto";
-            msgDiv.classList.remove('hidden');
+            document.getElementById('regMessage').innerText = data.message;
+            document.getElementById('regMessage').className = 'error';
         }
-    });
+    }
 
-    // Create rumor
-    document.getElementById('createRumorBtn').addEventListener('click', async () => {
-        const title = document.getElementById('rumorTitle').value.trim();
-        const content = document.getElementById('rumorContent').value.trim();
-        const msgDiv = document.getElementById('createMsg');
-        if (!title || !content) {
-            msgDiv.innerText = "Titel och innehåll krävs!";
-            msgDiv.classList.remove('hidden');
-            return;
-        }
-        const btn = document.getElementById('createRumorBtn');
-        const origText = btn.innerText;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loading"></span> SPRIDER...';
-        const res = await apiCall('/create_rumor', 'POST', { username: currentUser, title, content });
-        btn.disabled = false;
-        btn.innerHTML = origText;
-        if (res.success) {
-            document.getElementById('rumorTitle').value = '';
-            document.getElementById('rumorContent').value = '';
-            msgDiv.classList.add('hidden');
-            if (res.user) updateUserStatsFromData(res.user);
-            await loadRumors();
-        } else {
-            msgDiv.innerText = res.message;
-            msgDiv.classList.remove('hidden');
-        }
-    });
-
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+    function logout() {
         currentUser = null;
-        if (autoRefresh) clearInterval(autoRefresh);
-        document.getElementById('dashboardView').classList.add('hidden');
-        document.getElementById('loginView').classList.remove('hidden');
+        localStorage.removeItem('falunUser');
+        if (cooldownInterval) clearInterval(cooldownInterval);
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('loginView').style.display = 'block';
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
-    });
+        document.getElementById('loginMessage').innerText = '';
+    }
 
-    // Refresh
-    document.getElementById('refreshBtn').addEventListener('click', async () => {
-        if (currentUser) {
-            await refreshUserStats();
-            await loadRumors();
-        }
-    });
+    function startCooldownTimer() {
+        if (cooldownInterval) clearInterval(cooldownInterval);
+        cooldownInterval = setInterval(async () => {
+            if (currentUser) {
+                await loadUserProfile();
+            }
+        }, 2000);
+    }
 
-    // Visa formulär
+    // UI-flikar för login/register
     document.getElementById('showLoginBtn').addEventListener('click', () => {
-        document.getElementById('loginFormDiv').classList.remove('hidden');
-        document.getElementById('registerFormDiv').classList.add('hidden');
+        document.getElementById('loginFormDiv').style.display = 'block';
+        document.getElementById('registerFormDiv').style.display = 'none';
+        document.getElementById('showLoginBtn').classList.add('active');
+        document.getElementById('showRegisterBtn').classList.remove('active');
     });
     document.getElementById('showRegisterBtn').addEventListener('click', () => {
-        document.getElementById('loginFormDiv').classList.add('hidden');
-        document.getElementById('registerFormDiv').classList.remove('hidden');
+        document.getElementById('loginFormDiv').style.display = 'none';
+        document.getElementById('registerFormDiv').style.display = 'block';
+        document.getElementById('showRegisterBtn').classList.add('active');
+        document.getElementById('showLoginBtn').classList.remove('active');
     });
-    document.getElementById('showLoginBtn').click();
+    document.getElementById('doLoginBtn').addEventListener('click', () => {
+        const u = document.getElementById('loginUsername').value.trim();
+        const p = document.getElementById('loginPassword').value;
+        login(u, p);
+    });
+    document.getElementById('doRegisterBtn').addEventListener('click', () => {
+        const u = document.getElementById('regUsername').value.trim();
+        const p = document.getElementById('regPassword').value;
+        register(u, p);
+    });
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('postRumorBtn').addEventListener('click', () => {
+        const title = document.getElementById('rumorTitle').value.trim();
+        const content = document.getElementById('rumorContent').value.trim();
+        if (!title || !content) {
+            document.getElementById('rumorPostMessage').innerText = 'Titel och innehåll krävs';
+            return;
+        }
+        createRumor(title, content);
+    });
+
+    // Kolla om användaren redan är inloggad (session)
+    const savedUser = localStorage.getItem('falunUser');
+    if (savedUser) {
+        currentUser = savedUser;
+        // Verifiera att användaren fortfarande finns (genom att hämta user_data)
+        apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET').then(({ data }) => {
+            if (data && typeof data === 'object' && !data.error) {
+                userProfile = data;
+                loadRumors().then(() => {
+                    document.getElementById('loginView').style.display = 'none';
+                    document.getElementById('dashboardView').style.display = 'block';
+                    startCooldownTimer();
+                    loadUserProfile();
+                });
+            } else {
+                logout();
+            }
+        }).catch(() => logout());
+    } else {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+    }
 </script>
 </body>
 </html>
