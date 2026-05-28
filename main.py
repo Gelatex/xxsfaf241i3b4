@@ -71,15 +71,29 @@ def save_users_data(data):
 def get_user_profile(username):
     users = get_users_data()
     if username not in users:
+        # Skapa ny användare med standardvärden
         users[username] = {
             "xp": 0,
             "level": 1,
-            "coins": 10,          # start 10 coins
+            "coins": 10,
             "last_rumor_time": 0,
             "owned_emojis": [],
             "owned_effects": []
         }
         save_users_data(users)
+    
+    # SPECIAL: Om användaren är "Ebbe" – sätt level 999 och 1,000,000 coins
+    if username == "Ebbe":
+        users[username]["level"] = 999
+        users[username]["coins"] = 1000000
+        users[username]["xp"] = (999 - 1) * 100  # XP som motsvarar level 999
+        # Ge Ebbe alla emojis och effekter automatiskt
+        all_emojis = ["🌈", "💀", "🔥", "🐒", "💰", "😈", "🍆", "🍑", "😱"]
+        all_effects = ["glow", "luminance", "shadow", "flame", "crystal", "nuke"]
+        users[username]["owned_emojis"] = list(set(users[username].get("owned_emojis", []) + all_emojis))
+        users[username]["owned_effects"] = list(set(users[username].get("owned_effects", []) + all_effects))
+        save_users_data(users)
+    
     return users[username]
 
 def update_user_xp(username, xp_gain, extra_coins=0):
@@ -154,7 +168,6 @@ def like_rumor(rumor_id, username):
             r["likes"] += 1
             r.setdefault("liked_by", []).append(username)
             save_rumors(rumors)
-            # Ge 1 coin till skaparen
             add_coins(r["author"], 1)
             return True, "Gillade! +1🪙 till skaparen"
     return False, "Rykte saknas"
@@ -170,24 +183,40 @@ def downvote_rumor(rumor_id, username, cost=10):
                 return False, "Du har redan nedröstat detta rykte"
             r["downvotes"] = r.get("downvotes", 0) + 1
             r.setdefault("downvoted_by", []).append(username)
-            # Minska ryktets likes med 1 (om det har likes)
             if r["likes"] > 0:
                 r["likes"] -= 1
-            # Ta coins från användaren
             users[username]["coins"] -= cost
             save_users_data(users)
             save_rumors(rumors)
             return True, f"Nedröstade! -10🪙, ryktets likes minskades"
     return False, "Rykte saknas"
 
+def validate_comment_emojis(username, text):
+    """Kontrollera att varje tecken i texten antingen är en emoji som användaren äger, eller mellanslag."""
+    # Hämta användarens ägda emojis
+    profile = get_user_profile(username)
+    owned = profile.get("owned_emojis", [])
+    # Dela upp texten i "ord" (emojis eller mellanslag)
+    # Vi tillåter endast tecken som finns i owned-arrayen eller blanksteg
+    for ch in text:
+        if ch.isspace():
+            continue
+        if ch not in owned:
+            return False, f"Du äger inte emojin '{ch}'. Köp den i shoppen först."
+    return True, "OK"
+
 def add_comment(rumor_id, username, text):
+    # Först validera att kommentaren endast består av ägda emojis
+    valid, msg = validate_comment_emojis(username, text)
+    if not valid:
+        return False, msg
+    
     rumors = get_rumors()
     for r in rumors:
         if r["id"] == rumor_id:
             comment = {"user": username, "text": text, "date": datetime.now().isoformat()}
             r.setdefault("comments", []).append(comment)
             save_rumors(rumors)
-            # Ge 1 coin till skaparen
             add_coins(r["author"], 1)
             return True, "Kommentar tillagd! +1🪙 till skaparen"
     return False, "Rykte saknas"
@@ -204,7 +233,7 @@ def login():
     password = data.get('password', '')
     logins = get_logins()
     if username in logins and logins[username] == password:
-        get_user_profile(username)
+        get_user_profile(username)  # uppdaterar Ebbe om det behövs
         return jsonify({"success": True})
     return jsonify({"success": False, "message": "Fel uppgifter"}), 401
 
@@ -222,7 +251,7 @@ def register():
     _, sha = get_github_file("logins")
     new_content = "\n".join([f"{u}:{p}" for u, p in logins.items()])
     update_github_file("logins", new_content, sha)
-    get_user_profile(username)
+    get_user_profile(username)  # skapar användaren
     return jsonify({"success": True})
 
 @app.route('/user_data', methods=['GET'])
@@ -231,7 +260,6 @@ def user_data():
     if not username:
         return jsonify({"error": "No username"}), 400
     profile = get_user_profile(username)
-    # Skicka endast relevant info (inte känsligt)
     return jsonify({
         "username": username,
         "level": profile["level"],
@@ -270,7 +298,7 @@ def create_rumor_endpoint():
     users = get_users_data()
     users[username]["last_rumor_time"] = now
     save_users_data(users)
-    update_user_xp(username, 10, 1)  # +10 XP, +1 coin
+    update_user_xp(username, 10, 1)
     return jsonify({"success": True, "rumor": rumor})
 
 @app.route('/like_rumor', methods=['POST'])
@@ -278,7 +306,7 @@ def like_rumor_endpoint():
     data = request.get_json()
     ok, msg = like_rumor(data.get('rumor_id'), data.get('username'))
     if ok:
-        update_user_xp(data.get('username'), 1, 0)  # gillaren får 1 XP, men ingen coin
+        update_user_xp(data.get('username'), 1, 0)
         return jsonify({"success": True, "message": msg})
     return jsonify({"success": False, "message": msg}), 400
 
@@ -295,7 +323,7 @@ def comment_rumor_endpoint():
     data = request.get_json()
     ok, msg = add_comment(data.get('rumor_id'), data.get('username'), data.get('text'))
     if ok:
-        update_user_xp(data.get('username'), 2, 0)  # kommenteraren får 2 XP
+        update_user_xp(data.get('username'), 2, 0)
         return jsonify({"success": True, "message": msg})
     return jsonify({"success": False, "message": msg}), 400
 
