@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Falun Rykten 2</title>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui; }
+        body {
+            background: linear-gradient(145deg, #1a472a 0%, #0e2a1a 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255,248,225,0.95);
+            border-radius: 48px;
+            padding: 28px 24px 36px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 8px;
+            color: #ffd966;
+            text-shadow: 4px 4px 0 #a45d2e;
+        }
+        .sub {
+            font-weight: bold;
+            color: #3c2a1f;
+            border-bottom: 2px solid #cb8b42;
+            display: inline-block;
+            padding-bottom: 6px;
+            margin-bottom: 28px;
+        }
+        .switch-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .tab-btn {
+            background: #e7dbb8;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 8px 25px;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #cb8b42;
+            color: white;
+        }
+        .form-card {
+            background: #fffcf0;
+            border-radius: 36px;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            font-weight: 600;
+            color: #4a3624;
+        }
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0cfb0;
+            border-radius: 60px;
+            background: #fff6ea;
+        }
+        button[type="submit"] {
+            background: #3b7846;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 14px 20px;
+            width: 100%;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1f472a;
+        }
+        button[type="submit"]:active {
+            transform: translateY(2px);
+        }
+        .message {
+            margin-top: 20px;
+            background: #eee5d4;
+            border-radius: 60px;
+            padding: 10px;
+        }
+        .error { background: #ffded5; color: #a12400; }
+        .success { background: #d4ecd0; color: #1d5c2b; }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🐺 FALU RYKTEN 2</h1>
+    <div class="sub">📢 ryktet går – är du redo?</div>
+    <div class="switch-buttons">
+        <button id="loginTabBtn" class="tab-btn active">🔐 LOGGA IN</button>
+        <button id="registerTabBtn" class="tab-btn">✨ SKAPA KONTO</button>
+    </div>
+    <div id="loginForm" class="form-card">
+        <form id="loginFormElement">
+            <div class="form-group"><label>👤 Användarnamn</label><input type="text" id="loginUsername" required></div>
+            <div class="form-group"><label>🔒 Lösenord</label><input type="password" id="loginPassword" required></div>
+            <button type="submit">🎮 Logga in & spela</button>
+            <div id="loginMessage" class="message"></div>
+        </form>
+    </div>
+    <div id="registerForm" class="form-card" style="display: none;">
+        <form id="registerFormElement">
+            <div class="form-group"><label>✨ Välj användarnamn</label><input type="text" id="regUsername" required></div>
+            <div class="form-group"><label>🔒 Välj lösenord</label><input type="password" id="regPassword" required></div>
+            <button type="submit">📝 Skapa konto & logga in</button>
+            <div id="registerMessage" class="message"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Ingen API_BASE behövs – anrop går till samma server
+    const loginTab = document.getElementById('loginTabBtn');
+    const registerTab = document.getElementById('registerTabBtn');
+    const loginDiv = document.getElementById('loginForm');
+    const registerDiv = document.getElementById('registerForm');
+
+    loginTab.onclick = () => {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        loginDiv.style.display = 'block';
+        registerDiv.style.display = 'none';
+    };
+    registerTab.onclick = () => {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        registerDiv.style.display = 'block';
+        loginDiv.style.display = 'none';
+    };
+
+    function setLoading(btn, isLoading, originalText) {
+        if (isLoading) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Bearbetar...';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    // Login
+    const loginForm = document.getElementById('loginFormElement');
+    const loginBtn = loginForm.querySelector('button');
+    const loginOriginalText = loginBtn.innerHTML;
+    loginForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const msgDiv = document.getElementById('loginMessage');
+        if (!username || !password) {
+            msgDiv.innerHTML = '❌ Fyll i båda fälten.';
+            msgDiv.classList.add('error');
+            return;
+        }
+        setLoading(loginBtn, true, loginOriginalText);
+        msgDiv.innerHTML = '';
+        msgDiv.classList.remove('error', 'success');
+        try {
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                msgDiv.innerHTML = `✅ Välkommen ${username}! Spelet startar...`;
+                msgDiv.classList.add('success');
+                setTimeout(() => alert(`🎉 Inloggad som ${username}!`), 500);
+            } else {
+                msgDiv.innerHTML = `❌ ${data.message}`;
+                msgDiv.classList.add('error');
+            }
+        } catch (err) {
+            msgDiv.innerHTML = '⚠️ Kunde inte ansluta till servern.';
+            msgDiv.classList.add('error');
+        }
+        setLoading(loginBtn, false, loginOriginalText);
+    };
+
+    // Register
+    const registerForm = document.getElementById('registerFormElement');
+    const regBtn = registerForm.querySelector('button');
+    const regOriginalText = regBtn.innerHTML;
+    registerForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const msgDiv = document.getElementById('registerMessage');
+        if (username.length < 3) {
+            msgDiv.innerHTML = '👤 Användarnamn minst 3 tecken.';
+            msgDiv.classList.add('error');
+            return;
+        }
+        if (password.length < 4) {
+            msgDiv.innerHTML = '🔒 Lösenord minst 4 tecken.';
+            msgDiv.classList.add('error');
+            return;
+        }
+        setLoading(regBtn, true, regOriginalText);
+        msgDiv.innerHTML = '';
+        msgDiv.classList.remove('error', 'success');
+        try {
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                msgDiv.innerHTML = `🎉 Konto skapat! Loggar in dig...`;
+                msgDiv.classList.add('success');
+                document.getElementById('loginUsername').value = username;
+                document.getElementById('loginPassword').value = password;
+                setTimeout(() => {
+                    loginTab.click();
+                    loginForm.dispatchEvent(new Event('submit'));
+                }, 1200);
+            } else {
+                msgDiv.innerHTML = `❌ ${data.message}`;
+                msgDiv.classList.add('error');
+            }
+        } catch (err) {
+            msgDiv.innerHTML = '⚠️ Kunde inte ansluta till servern.';
+            msgDiv.classList.add('error');
+        }
+        setLoading(regBtn, false, regOriginalText);
+    };
+</script>
+</body>
+</html>
