@@ -16,14 +16,12 @@
             padding: 16px;
             color: #b3ffaa;
         }
-        /* Layout: 3 kolumner */
         .app-layout {
             display: flex;
             gap: 16px;
             max-width: 1400px;
             margin: 0 auto;
         }
-        /* Vänster sidofält – progress bar */
         .left-sidebar {
             width: 200px;
             background: #1a2a1a;
@@ -34,14 +32,12 @@
             position: sticky;
             top: 16px;
         }
-        /* Mitten – huvudinnehåll */
         .main-content {
             flex: 1;
             background: #1a2a1a;
             border: 3px solid #5f9e5f;
             padding: 16px;
         }
-        /* Höger sidofält – shop */
         .right-sidebar {
             width: 260px;
             background: #1a2a1a;
@@ -51,7 +47,6 @@
             position: sticky;
             top: 16px;
         }
-        /* 8-bit styling */
         button, .tab-btn {
             background: #2b3b2b;
             border: 2px solid #5f9e5f;
@@ -84,15 +79,37 @@
             margin: 16px 0;
             padding: 12px;
             box-shadow: 4px 4px 0 #0e1e0e;
-            transition: all 0.1s;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
-        /* Effekter på rumour border */
-        .rumor-card.effect-glow { border: 2px solid #ffcc44; box-shadow: 0 0 8px #ffcc44; }
-        .rumor-card.effect-pixel { border: 4px dotted #88ff88; }
-        .rumor-card.effect-rainbow { border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); border-image-slice: 1; border-width: 3px; border-style: solid; }
-        .rumor-card.effect-shadow { box-shadow: 8px 8px 0 #000000; }
-        .rumor-title { font-size: 1.4rem; font-weight: bold; color: #ffcc77; }
-        .rumor-meta { font-size: 0.8rem; color: #8fbf8f; }
+        /* Effekter */
+        .rumor-card.effect-glow { border: 2px solid #ffcc44; box-shadow: 0 0 12px #ffcc44, 4px 4px 0 #0e1e0e; }
+        .rumor-card.effect-luminance { border: 2px solid #ffffff; box-shadow: 0 0 20px #ffffff, 4px 4px 0 #0e1e0e; background: #2e3e2e; }
+        .rumor-card.effect-shadow { border: 2px solid #2a2a2a; box-shadow: 8px 8px 0 #000000, 0 0 0px; }
+        .rumor-card.effect-flame { border: 2px solid #ff6600; box-shadow: 0 0 15px #ff6600, 4px 4px 0 #0e1e0e; animation: flamePulse 0.5s infinite; }
+        @keyframes flamePulse { 0% { box-shadow: 0 0 5px #ff6600; } 100% { box-shadow: 0 0 20px #ffaa00; } }
+        .rumor-card.effect-crystal { border: 2px solid #88aaff; box-shadow: 0 0 20px #88aaff, inset 0 0 10px #88aaff; animation: crystal 1s ease-in-out infinite; }
+        @keyframes crystal { 0% { box-shadow: 0 0 10px #88aaff; } 50% { box-shadow: 0 0 30px #aaffff; } 100% { box-shadow: 0 0 10px #88aaff; } }
+        .rumor-card.effect-nuke { position: relative; animation: nukeShake 0.3s infinite; border: 2px solid #ff4444; box-shadow: 0 0 30px red; }
+        @keyframes nukeShake { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -2px); } 50% { transform: translate(-3px, 0px); } 75% { transform: translate(1px, 2px); } 100% { transform: translate(0,0); } }
+        .nuke-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #ffaa00, #ff0000);
+            pointer-events: none;
+            z-index: 10000;
+            animation: nukeBlast 0.8s forwards;
+        }
+        @keyframes nukeBlast {
+            0% { opacity: 1; transform: scale(0); }
+            100% { opacity: 0; transform: scale(10); display: none; }
+        }
+        .rumor-title { font-size: 1.4rem; font-weight: bold; color: #ffcc77; word-break: break-word; }
+        .rumor-meta { font-size: 0.8rem; color: #8fbf8f; cursor: pointer; text-decoration: underline; }
         .progress-bar-container {
             background: #0e1a0e;
             border: 2px solid #5f9e5f;
@@ -111,7 +128,6 @@
             padding: 8px;
             border: 1px solid #5f9e5f;
         }
-        /* Loading overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -125,8 +141,6 @@
             align-items: center;
             z-index: 9999;
             font-size: 2rem;
-            font-family: monospace;
-            color: #aaffaa;
             flex-direction: column;
         }
         .spinner {
@@ -140,7 +154,40 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .hidden { display: none; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .shop-emojis, .shop-effects { margin-top: 16px; }
+        .emoji-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+        .emoji-btn {
+            background: #2b3b2b;
+            border: 1px solid #5f9e5f;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a2a1a;
+            border: 4px solid #5f9e5f;
+            padding: 20px;
+            z-index: 10001;
+            width: 300px;
+            text-align: center;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+        }
     </style>
 </head>
 <body>
@@ -158,9 +205,9 @@
         </div>
         <div>XP: <span id="currentXp">0</span> / <span id="nextLevelXp">100</span></div>
         <div>🪙 MYNT: <span id="userCoinsSide">0</span></div>
+        <div>📢 DINA RYKTEN: <span id="userRumorsCount">0</span></div>
     </div>
 
-    <!-- Mitten: dashboard -->
     <div class="main-content">
         <div class="flex-between">
             <h1>🐺 FALU RYKTEN 2</h1>
@@ -172,17 +219,12 @@
             <input type="text" id="rumorTitle" placeholder="Titel">
             <textarea id="rumorContent" placeholder="Vad har du hört?..."></textarea>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                <select id="rumorEmojiSelect">
-                    <option value="">Ingen emoji</option>
-                </select>
-                <select id="rumorEffectSelect">
-                    <option value="">Ingen effekt</option>
-                </select>
+                <select id="rumorEmojiSelect"><option value="">Ingen emoji</option></select>
+                <select id="rumorEffectSelect"><option value="">Ingen effekt</option></select>
             </div>
-            <button id="postRumorBtn">📢 SKICKA RYKTE (+10 XP, 1🪙)</button>
+            <button id="postRumorBtn">📢 SKICKA RYKTE (+10 XP, +1🪙)</button>
             <div id="rumorPostMessage" style="margin-top:6px"></div>
         </div>
-        <!-- Lista rykten -->
         <h3>📜 ALLA RYKTEN</h3>
         <div id="rumorsList"></div>
     </div>
@@ -191,17 +233,17 @@
     <div class="right-sidebar">
         <h3>🛒 SHOP</h3>
         <div class="shop-emojis">
-            <h4>😀 EMOJIS (5 coins)</h4>
+            <h4>😀 EMOJIS</h4>
             <div id="emojiShopList"></div>
         </div>
         <div class="shop-effects">
-            <h4>✨ EFFEKTER (10 coins)</h4>
+            <h4>✨ EFFEKTER</h4>
             <div id="effectShopList"></div>
         </div>
     </div>
 </div>
 
-<!-- Login/register vy (visas först) -->
+<!-- Login/register vy -->
 <div id="loginView" class="app-layout" style="justify-content: center;">
     <div style="background: #1a2a1a; border: 4px solid #5f9e5f; padding: 32px; width: 400px; text-align: center;">
         <h1>🐺 FALU RYKTEN 2</h1>
@@ -228,11 +270,28 @@
     // ---------- Globals ----------
     let currentUser = null;
     let rumorsData = [];
-    let userProfile = { level: 1, xp: 0, coins: 0, owned_emojis: [], owned_effects: [] };
+    let userProfile = { level: 1, xp: 0, coins: 10, owned_emojis: [], owned_effects: [] };
     let loadingCounter = 0;
 
-    const availableEmojis = ["😀", "😂", "😍", "🐺", "📢", "💀", "🎉", "🔥"];
-    const availableEffects = ["glow", "pixel", "rainbow", "shadow"];
+    const emojiShopItems = [
+        { id: "🌈", name: "Rainbow", price: 5 },
+        { id: "💀", name: "Skull", price: 10 },
+        { id: "🔥", name: "Fire", price: 15 },
+        { id: "🐒", name: "Apa", price: 20 },
+        { id: "💰", name: "Pengar", price: 25 },
+        { id: "😈", name: "Devil", price: 30 },
+        { id: "🍆", name: "Eggplant", price: 35 },
+        { id: "🍑", name: "Peach", price: 35 },
+        { id: "😱", name: "Omg", price: 40 }
+    ];
+    const effectShopItems = [
+        { id: "glow", name: "Glow", price: 10 },
+        { id: "luminance", name: "Luminance", price: 20 },
+        { id: "shadow", name: "Shadow", price: 50 },
+        { id: "flame", name: "Flame", price: 100 },
+        { id: "crystal", name: "Crystal", price: 250 },
+        { id: "nuke", name: "Nuke", price: 500 }
+    ];
 
     // ---------- Loading overlay ----------
     function showLoading() {
@@ -255,7 +314,7 @@
         }
     }
 
-    // ---------- API-anrop ----------
+    // ---------- API ----------
     async function apiCall(endpoint, method, body) {
         const opts = { method, headers: { 'Content-Type': 'application/json' } };
         if (body) opts.body = JSON.stringify(body);
@@ -264,11 +323,11 @@
         return { status: res.status, data };
     }
 
-    // ---------- Hjälpfunktioner ----------
+    // ---------- Data ----------
     async function loadUserProfile() {
         if (!currentUser) return;
         const { data } = await apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET');
-        if (data && typeof data === 'object') {
+        if (data && !data.error) {
             userProfile = data;
             updateUI();
         }
@@ -283,30 +342,28 @@
     }
 
     function updateUI() {
-        document.getElementById('levelNum').innerText = userProfile.level || 1;
-        document.getElementById('currentXp').innerText = userProfile.xp || 0;
-        const nextXp = ((Math.floor((userProfile.xp || 0) / 100) + 1) * 100);
+        document.getElementById('levelNum').innerText = userProfile.level;
+        document.getElementById('currentXp').innerText = userProfile.xp;
+        const nextXp = (Math.floor(userProfile.xp / 100) + 1) * 100;
         document.getElementById('nextLevelXp').innerText = nextXp;
-        const percent = ((userProfile.xp % 100) / 100) * 100;
+        const percent = (userProfile.xp % 100) / 100 * 100;
         document.getElementById('xpProgressFill').style.width = percent + '%';
-        document.getElementById('userCoinsSide').innerText = userProfile.coins || 0;
-        // Uppdatera shop-knappar
+        document.getElementById('userCoinsSide').innerText = userProfile.coins;
+        const userRumors = rumorsData.filter(r => r.author === currentUser).length;
+        document.getElementById('userRumorsCount').innerText = userRumors;
         renderShop();
-        // Uppdatera select-options för emojis/effects baserat på ägda
         updateSelects();
     }
 
     function updateSelects() {
         const emojiSelect = document.getElementById('rumorEmojiSelect');
         const effectSelect = document.getElementById('rumorEffectSelect');
-        const ownedEmojis = userProfile.owned_emojis || [];
-        const ownedEffects = userProfile.owned_effects || [];
         emojiSelect.innerHTML = '<option value="">Ingen emoji</option>';
-        ownedEmojis.forEach(emoji => {
+        (userProfile.owned_emojis || []).forEach(emoji => {
             emojiSelect.innerHTML += `<option value="${emoji}">${emoji}</option>`;
         });
         effectSelect.innerHTML = '<option value="">Ingen effekt</option>';
-        ownedEffects.forEach(effect => {
+        (userProfile.owned_effects || []).forEach(effect => {
             effectSelect.innerHTML += `<option value="${effect}">${effect}</option>`;
         });
     }
@@ -327,31 +384,30 @@
         const ownedEmojis = userProfile.owned_emojis || [];
         const ownedEffects = userProfile.owned_effects || [];
         emojiContainer.innerHTML = '';
-        availableEmojis.forEach(emoji => {
-            const owned = ownedEmojis.includes(emoji);
+        emojiShopItems.forEach(item => {
+            const owned = ownedEmojis.includes(item.id);
             emojiContainer.innerHTML += `
                 <div class="shop-item">
-                    <span>${emoji}</span>
-                    ${!owned ? `<button class="buyEmojiBtn" data-emoji="${emoji}">Köp (5🪙)</button>` : '<span>Ägd ✅</span>'}
+                    <span>${item.id} ${item.name} (${item.price}🪙)</span>
+                    ${!owned ? `<button class="buyEmojiBtn" data-emoji="${item.id}" data-price="${item.price}">Köp</button>` : '<span>✅ Ägd</span>'}
                 </div>
             `;
         });
         effectContainer.innerHTML = '';
-        availableEffects.forEach(effect => {
-            const owned = ownedEffects.includes(effect);
+        effectShopItems.forEach(item => {
+            const owned = ownedEffects.includes(item.id);
             effectContainer.innerHTML += `
                 <div class="shop-item">
-                    <span>${effect}</span>
-                    ${!owned ? `<button class="buyEffectBtn" data-effect="${effect}">Köp (10🪙)</button>` : '<span>Ägd ✅</span>'}
+                    <span>✨ ${item.name} (${item.price}🪙)</span>
+                    ${!owned ? `<button class="buyEffectBtn" data-effect="${item.id}" data-price="${item.price}">Köp</button>` : '<span>✅ Ägd</span>'}
                 </div>
             `;
         });
-        // Bind events
         document.querySelectorAll('.buyEmojiBtn').forEach(btn => {
-            btn.addEventListener('click', () => purchaseItem('emoji', btn.getAttribute('data-emoji'), 5));
+            btn.addEventListener('click', () => purchaseItem('emoji', btn.getAttribute('data-emoji'), parseInt(btn.getAttribute('data-price'))));
         });
         document.querySelectorAll('.buyEffectBtn').forEach(btn => {
-            btn.addEventListener('click', () => purchaseItem('effect', btn.getAttribute('data-effect'), 10));
+            btn.addEventListener('click', () => purchaseItem('effect', btn.getAttribute('data-effect'), parseInt(btn.getAttribute('data-price'))));
         });
     }
 
@@ -369,6 +425,67 @@
         }
     }
 
+    // Nuke-animation global
+    function triggerNukeAnimation() {
+        const overlay = document.createElement('div');
+        overlay.className = 'nuke-overlay';
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 800);
+    }
+
+    async function likeRumor(id) {
+        const { data } = await withLoading(apiCall('/like_rumor', 'POST', { username: currentUser, rumor_id: id }));
+        if (data.success) {
+            await loadRumors();
+            await loadUserProfile();
+        } else {
+            alert(data.message);
+        }
+    }
+
+    async function downvoteRumor(id) {
+        const { data } = await withLoading(apiCall('/downvote_rumor', 'POST', { username: currentUser, rumor_id: id }));
+        if (data.success) {
+            await loadRumors();
+            await loadUserProfile();
+        } else {
+            alert(data.message);
+        }
+    }
+
+    async function commentRumor(id, text) {
+        const { data } = await withLoading(apiCall('/comment_rumor', 'POST', { username: currentUser, rumor_id: id, text }));
+        if (data.success) {
+            await loadRumors();
+            await loadUserProfile();
+        } else {
+            alert(data.message);
+        }
+    }
+
+    function showUserProfile(username) {
+        const user = rumorsData.find(r => r.author === username)?.author || username;
+        fetch(`/user_data?username=${encodeURIComponent(username)}`).then(res => res.json()).then(profile => {
+            const modalHtml = `
+                <div id="profileModalBackdrop" class="modal-backdrop"></div>
+                <div class="modal">
+                    <h3>${profile.username}</h3>
+                    <p>⭐ Level: ${profile.level}</p>
+                    <p>✨ XP: ${profile.xp}</p>
+                    <p>🪙 Coins: ${profile.coins}</p>
+                    <p>😀 Emojis: ${(profile.owned_emojis || []).join(', ') || 'inga'}</p>
+                    <p>✨ Effekter: ${(profile.owned_effects || []).join(', ') || 'inga'}</p>
+                    <button id="closeProfileBtn">Stäng</button>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('closeProfileBtn').onclick = () => {
+                document.getElementById('profileModalBackdrop')?.remove();
+                document.querySelector('.modal')?.remove();
+            };
+        });
+    }
+
     function renderRumors() {
         const container = document.getElementById('rumorsList');
         if (!rumorsData.length) {
@@ -379,21 +496,26 @@
         for (let r of rumorsData) {
             const dateStr = new Date(r.date).toLocaleString();
             const liked = (r.liked_by || []).includes(currentUser);
+            const downvoted = (r.downvoted_by || []).includes(currentUser);
             const effectClass = r.effect ? `effect-${r.effect}` : '';
             const emojiPrefix = r.emoji ? `${r.emoji} ` : '';
             html += `
                 <div class="rumor-card ${effectClass}" data-id="${r.id}">
                     <div class="rumor-title">${emojiPrefix}${escapeHtml(r.title)}</div>
-                    <div class="rumor-meta">Av: ${escapeHtml(r.author)} | ${dateStr}</div>
+                    <div class="rumor-meta" onclick="showUserProfile('${escapeHtml(r.author)}')">Av: ${escapeHtml(r.author)} | ${dateStr}</div>
                     <div class="rumor-content">${escapeHtml(r.content)}</div>
                     <div class="like-comment">
-                        <button class="like-btn" data-id="${r.id}">❤️ ${r.likes} gilla</button>
+                        <button class="like-btn" data-id="${r.id}">❤️ ${r.likes}</button>
+                        <button class="downvote-btn" data-id="${r.id}">👎 Nedrösta (10🪙)</button>
                         <span>💬 ${(r.comments || []).length} kommentarer</span>
                     </div>
                     <div class="comment-section" id="comments-${r.id}">
-                        ${(r.comments || []).map(c => `<div class="comment"><strong>${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${new Date(c.date).toLocaleString()}</span></div>`).join('')}
-                        <div style="display:flex; gap:6px; margin-top:8px;">
-                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar...">
+                        ${(r.comments || []).map(c => `<div class="comment"><strong onclick="showUserProfile('${escapeHtml(c.user)}')" style="cursor:pointer;">${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${new Date(c.date).toLocaleString()}</span></div>`).join('')}
+                        <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar..." style="flex:1">
+                            <div class="emoji-picker" id="emojiPicker-${r.id}">
+                                ${emojiShopItems.map(e => `<button class="emoji-btn" data-emoji="${e.id}">${e.id}</button>`).join('')}
+                            </div>
                             <button class="comment-btn" data-id="${r.id}">Skicka</button>
                         </div>
                     </div>
@@ -401,28 +523,48 @@
             `;
         }
         container.innerHTML = html;
-        // Binda events
+        // Events
         container.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async () => {
                 const id = parseInt(btn.getAttribute('data-id'));
-                await withLoading(apiCall('/like_rumor', 'POST', { username: currentUser, rumor_id: id }));
-                await loadRumors();
-                await loadUserProfile();
+                await likeRumor(id);
+            });
+        });
+        container.querySelectorAll('.downvote-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                if (confirm('Kosta 10 coins att nedrösta. Fortsätta?')) {
+                    await downvoteRumor(id);
+                }
             });
         });
         container.querySelectorAll('.comment-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async () => {
                 const id = parseInt(btn.getAttribute('data-id'));
                 const input = document.getElementById(`commentInput-${id}`);
-                const text = input.value.trim();
+                let text = input.value.trim();
                 if (text) {
-                    await withLoading(apiCall('/comment_rumor', 'POST', { username: currentUser, rumor_id: id, text }));
-                    await loadRumors();
-                    await loadUserProfile();
+                    await commentRumor(id, text);
                     input.value = '';
                 }
             });
         });
+        // Emoji picker för varje kommentar
+        document.querySelectorAll('.emoji-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const emoji = btn.getAttribute('data-emoji');
+                const commentDiv = btn.closest('.comment-section');
+                const input = commentDiv.querySelector('input');
+                input.value += emoji;
+            });
+        });
+        // Om något rykte har nuke-effekt, trigga animation (endast för ryktet som visas)
+        for (let r of rumorsData) {
+            if (r.effect === 'nuke') {
+                triggerNukeAnimation();
+                break;
+            }
+        }
     }
 
     function escapeHtml(str) {
