@@ -1,6 +1,16 @@
 {
   "rumors": [
     {
+      "id": 1779969349499,
+      "author": "simon",
+      "title": "hej",
+      "content": "testtest",
+      "likes": 0,
+      "liked_by": [],
+      "comments": [],
+      "timestamp": 1779969349.4990323
+    },
+    {
       "id": 1779969143486,
       "author": "simon",
       "title": "Eskil Incident",
