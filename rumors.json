@@ -7,8 +7,10 @@
     "date": "2026-05-28T12:41:15.678448",
     "likes": 0,
     "liked_by": [],
-    "downvotes": 0,
-    "downvoted_by": [],
+    "downvotes": 1,
+    "downvoted_by": [
+      "Ebbe"
+    ],
     "comments": [],
     "emoji": "🍑",
     "effect": "nuke"
