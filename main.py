@@ -1,15 +1,13 @@
 import os
-import json
 import base64
 import requests
-from flask import Flask, request, jsonify, send_from_directory
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, request, jsonify
 
-# Skapa Flask-appen (detta måste vara först!)
-app = Flask(__name__, static_url_path='', static_folder='.')
+# Skapa Flask-appen
+app = Flask(__name__)
 
 # ---------------------------
-# Hjälpfunktion för att läsa logins-filen från GitHub
+# Hjälpfunktioner för GitHub
 # ---------------------------
 def get_github_file_content():
     """Hämtar innehållet i logins-filen från GitHub och returnerar (content, sha)"""
@@ -39,7 +37,7 @@ def update_github_file(content, sha):
     }
     new_content_base64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
     payload = {
-        "message": "Uppdaterar logins-fil via Falun Rykten 2",
+        "message": "Uppdaterar logins-fil via Falun Rykten 2 API",
         "content": new_content_base64,
         "sha": sha
     }
@@ -86,12 +84,18 @@ def add_user(username, password):
         return False, str(e)
 
 # ---------------------------
-# Routes / endpoints
+# API-routes (endast backend)
 # ---------------------------
 @app.route('/')
 def home():
-    """Visa index.html när man går till roten"""
-    return send_from_directory('.', 'index.html')
+    """Roten ger bara ett meddelande – HTML finns separat"""
+    return jsonify({
+        "message": "Falun Rykten 2 API är igång!",
+        "endpoints": {
+            "POST /login": "Logga in med {username, password}",
+            "POST /register": "Registrera ny användare med {username, password}"
+        }
+    })
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -127,8 +131,8 @@ def register():
         return jsonify({"success": False, "message": msg}), 409
 
 # ---------------------------
-# Starta servern (används av Render)
+# Starta servern
 # ---------------------------
 if __name__ == "__main__":
-    # För lokal testning: port 10000
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
