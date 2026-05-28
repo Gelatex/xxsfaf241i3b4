@@ -9,6 +9,12 @@
     "liked_by": [
       "simon"
     ],
-    "comments": []
+    "comments": [
+      {
+        "user": "simon",
+        "text": "haha aa fan",
+        "date": "2026-05-28T12:02:49.310705"
+      }
+    ]
   }
 ]
