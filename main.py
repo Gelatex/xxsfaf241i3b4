@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Tillåter att din HTML-sida pratar med backenden
+CORS(app)  # Tillåter alla domäner att prata med APIet
 
 # ---------------------------
 # Hjälpfunktioner för GitHub
@@ -62,14 +62,16 @@ def add_user(username, password):
         return False, str(e)
 
 # ---------------------------
-# API-vägar (endpoints)
+# API-vägar
 # ---------------------------
 @app.route('/')
 def home():
     return jsonify({"message": "Falun Rykten 2 API är igång!", "endpoints": {"POST /login": "logga in", "POST /register": "registrera"}})
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST', 'OPTIONS'])
 def login():
+    if request.method == 'OPTIONS':
+        return '', 200
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '')
@@ -79,8 +81,10 @@ def login():
         return jsonify({"success": True, "message": "Inloggning lyckades"})
     return jsonify({"success": False, "message": "Fel användarnamn eller lösenord"}), 401
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST', 'OPTIONS'])
 def register():
+    if request.method == 'OPTIONS':
+        return '', 200
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '')
@@ -95,9 +99,6 @@ def register():
         return jsonify({"success": True, "message": msg})
     return jsonify({"success": False, "message": msg}), 409
 
-# ---------------------------
-# Starta servern
-# ---------------------------
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
