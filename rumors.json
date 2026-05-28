@@ -5,8 +5,10 @@
     "title": "bög",
     "content": "hej lil skiten",
     "date": "2026-05-28T12:15:38.678466",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "simon"
+    ],
     "comments": [],
     "emoji": "💀",
     "effect": "pixel"
