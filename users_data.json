@@ -11,5 +11,30 @@
       "rainbow",
       "pixel"
     ]
+  },
+  "Ebbe": {
+    "xp": 99800,
+    "level": 999,
+    "coins": 1000000,
+    "last_rumor_time": 0,
+    "owned_emojis": [
+      "🌈",
+      "💀",
+      "🔥",
+      "🐒",
+      "💰",
+      "😈",
+      "🍆",
+      "🍑",
+      "😱"
+    ],
+    "owned_effects": [
+      "glow",
+      "luminance",
+      "shadow",
+      "flame",
+      "crystal",
+      "nuke"
+    ]
   }
 }
