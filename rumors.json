@@ -5,8 +5,10 @@
     "title": "Hej",
     "content": "Eskil bajsa",
     "date": "2026-05-28T12:41:15.678448",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "Ebbe"
+    ],
     "downvotes": 1,
     "downvoted_by": [
       "Ebbe"
