@@ -8,50 +8,63 @@
         * {
             box-sizing: border-box;
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
+            font-family: 'Courier New', monospace;
         }
         body {
             background: #0a0f0a;
-            font-family: 'Courier New', 'MS Gothic', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             color: #b3ffaa;
         }
-        /* 8-bit retro container */
-        .container {
-            max-width: 900px;
+        /* Layout: 3 kolumner */
+        .app-layout {
+            display: flex;
+            gap: 16px;
+            max-width: 1400px;
             margin: 0 auto;
+        }
+        /* Vänster sidofält – progress bar */
+        .left-sidebar {
+            width: 200px;
             background: #1a2a1a;
-            border: 4px solid #5f9e5f;
-            box-shadow: 8px 8px 0 #0a1f0a;
+            border: 3px solid #5f9e5f;
+            padding: 16px 8px;
+            text-align: center;
+            height: fit-content;
+            position: sticky;
+            top: 16px;
+        }
+        /* Mitten – huvudinnehåll */
+        .main-content {
+            flex: 1;
+            background: #1a2a1a;
+            border: 3px solid #5f9e5f;
             padding: 16px;
         }
-        h1, h2, h3 {
-            font-family: 'Courier New', monospace;
-            text-shadow: 2px 2px 0 #0a2a0a;
-            letter-spacing: 2px;
+        /* Höger sidofält – shop */
+        .right-sidebar {
+            width: 260px;
+            background: #1a2a1a;
+            border: 3px solid #5f9e5f;
+            padding: 16px;
+            height: fit-content;
+            position: sticky;
+            top: 16px;
         }
-        h1 {
-            font-size: 2rem;
-            background: #2a3a2a;
-            display: inline-block;
-            padding: 6px 12px;
-            border: 2px solid #6fae6f;
-            margin-top: 0;
-        }
-        button, .tab-btn, .rumor-btn {
+        /* 8-bit styling */
+        button, .tab-btn {
             background: #2b3b2b;
             border: 2px solid #5f9e5f;
             color: #cfffc0;
             font-family: monospace;
             font-weight: bold;
-            font-size: 1rem;
             padding: 6px 12px;
             cursor: pointer;
             box-shadow: 3px 3px 0 #0e2a0e;
             transition: 0.05s linear;
+            margin: 4px 0;
         }
-        button:active, .tab-btn:active {
+        button:active {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0 #0e2a0e;
         }
@@ -71,180 +84,196 @@
             margin: 16px 0;
             padding: 12px;
             box-shadow: 4px 4px 0 #0e1e0e;
+            transition: all 0.1s;
         }
-        .rumor-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #ffcc77;
-            border-bottom: 1px dashed #7fae7f;
-        }
-        .rumor-meta {
-            font-size: 0.8rem;
-            color: #8fbf8f;
-            margin: 5px 0;
-        }
-        .rumor-content {
-            margin: 10px 0;
-            white-space: pre-wrap;
-        }
-        .like-comment {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .comment-section {
-            margin-top: 12px;
-            border-top: 1px solid #4e7e4e;
-            padding-top: 8px;
-        }
-        .comment {
-            background: #122212;
-            margin: 6px 0;
-            padding: 6px;
-            font-size: 0.85rem;
-        }
-        .user-info {
+        /* Effekter på rumour border */
+        .rumor-card.effect-glow { border: 2px solid #ffcc44; box-shadow: 0 0 8px #ffcc44; }
+        .rumor-card.effect-pixel { border: 4px dotted #88ff88; }
+        .rumor-card.effect-rainbow { border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); border-image-slice: 1; border-width: 3px; border-style: solid; }
+        .rumor-card.effect-shadow { box-shadow: 8px 8px 0 #000000; }
+        .rumor-title { font-size: 1.4rem; font-weight: bold; color: #ffcc77; }
+        .rumor-meta { font-size: 0.8rem; color: #8fbf8f; }
+        .progress-bar-container {
             background: #0e1a0e;
-            padding: 8px;
             border: 2px solid #5f9e5f;
-            margin-bottom: 20px;
+            height: 24px;
+            margin: 12px 0;
+        }
+        .progress-bar-fill {
+            background: #6fbf6f;
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s;
+        }
+        .shop-item {
+            background: #0e1a0e;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #5f9e5f;
+        }
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
             display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-        .stat {
-            background: #1f2f1f;
-            padding: 4px 8px;
-            margin: 2px;
-            display: inline-block;
-        }
-        .cooldown {
-            color: #ffaa66;
-        }
-        .error {
-            color: #ff8866;
-            background: #331100;
-            padding: 6px;
-        }
-        .success {
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 2rem;
+            font-family: monospace;
             color: #aaffaa;
+            flex-direction: column;
         }
-        .hidden {
-            display: none;
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 6px solid #5f9e5f;
+            border-top-color: #b3ffaa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
-        hr {
-            border-color: #4e8e4e;
-        }
-        textarea {
-            height: 80px;
-            resize: vertical;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .shop-emojis, .shop-effects { margin-top: 16px; }
     </style>
 </head>
 <body>
-<div class="container" id="app">
-    <!-- Inloggningsvy -->
-    <div id="loginView">
-        <h1>🐺 FALU RYKTEN 2 🕹️</h1>
-        <div class="tab-buttons">
-            <button id="showLoginBtn" class="tab-btn active">🔐 LOGGA IN</button>
-            <button id="showRegisterBtn" class="tab-btn">✨ SKAPA KONTO</button>
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="spinner"></div>
+    <div style="margin-top: 16px;">LADDAR...</div>
+</div>
+
+<div id="app" class="app-layout" style="display: none;">
+    <!-- Vänster: progress bar -->
+    <div class="left-sidebar">
+        <h3>⭐ NIVÅ <span id="levelNum">1</span></h3>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="xpProgressFill"></div>
         </div>
-        <div id="loginFormDiv">
-            <h3>Logga in</h3>
-            <input type="text" id="loginUsername" placeholder="Användarnamn"><br>
-            <input type="password" id="loginPassword" placeholder="Lösenord"><br>
-            <button id="doLoginBtn">🎮 Logga in</button>
-            <div id="loginMessage" class="error" style="margin-top:10px"></div>
-        </div>
-        <div id="registerFormDiv" style="display:none">
-            <h3>Skapa konto</h3>
-            <input type="text" id="regUsername" placeholder="Användarnamn (minst 3 tecken)"><br>
-            <input type="password" id="regPassword" placeholder="Lösenord (minst 4 tecken)"><br>
-            <button id="doRegisterBtn">📝 Skapa konto</button>
-            <div id="regMessage" class="error" style="margin-top:10px"></div>
-        </div>
+        <div>XP: <span id="currentXp">0</span> / <span id="nextLevelXp">100</span></div>
+        <div>🪙 MYNT: <span id="userCoinsSide">0</span></div>
     </div>
 
-    <!-- Dashboard (syns efter inloggning) -->
-    <div id="dashboardView" style="display:none">
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+    <!-- Mitten: dashboard -->
+    <div class="main-content">
+        <div class="flex-between">
             <h1>🐺 FALU RYKTEN 2</h1>
             <button id="logoutBtn">🚪 LOGGA UT</button>
         </div>
-        <!-- Användarinfo -->
-        <div class="user-info" id="userStats">
-            <span class="stat">⭐ NIVÅ: <span id="userLevel">1</span></span>
-            <span class="stat">✨ XP: <span id="userXp">0</span></span>
-            <span class="stat">🪙 MYNT: <span id="userCoins">0</span></span>
-            <span class="stat cooldown">⏳ COOLDOWN: <span id="cooldownSec">0</span> s</span>
-        </div>
-
-        <!-- Skapa nytt rykte -->
-        <div style="background: #1a2a1a; border: 2px solid #5f9e5f; padding: 12px; margin-bottom: 20px;">
+        <!-- Skapa rykte -->
+        <div style="border: 2px solid #5f9e5f; padding: 12px; margin-bottom: 20px;">
             <h3>✍️ SPRID ETT RYKTE</h3>
-            <input type="text" id="rumorTitle" placeholder="Titel" maxlength="100">
+            <input type="text" id="rumorTitle" placeholder="Titel">
             <textarea id="rumorContent" placeholder="Vad har du hört?..."></textarea>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <select id="rumorEmojiSelect">
+                    <option value="">Ingen emoji</option>
+                </select>
+                <select id="rumorEffectSelect">
+                    <option value="">Ingen effekt</option>
+                </select>
+            </div>
             <button id="postRumorBtn">📢 SKICKA RYKTE (+10 XP, 1🪙)</button>
-            <div id="rumorPostMessage" class="error" style="margin-top:6px"></div>
+            <div id="rumorPostMessage" style="margin-top:6px"></div>
         </div>
-
-        <!-- Lista med rykten -->
+        <!-- Lista rykten -->
         <h3>📜 ALLA RYKTEN</h3>
         <div id="rumorsList"></div>
+    </div>
+
+    <!-- Höger: shop -->
+    <div class="right-sidebar">
+        <h3>🛒 SHOP</h3>
+        <div class="shop-emojis">
+            <h4>😀 EMOJIS (5 coins)</h4>
+            <div id="emojiShopList"></div>
+        </div>
+        <div class="shop-effects">
+            <h4>✨ EFFEKTER (10 coins)</h4>
+            <div id="effectShopList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Login/register vy (visas först) -->
+<div id="loginView" class="app-layout" style="justify-content: center;">
+    <div style="background: #1a2a1a; border: 4px solid #5f9e5f; padding: 32px; width: 400px; text-align: center;">
+        <h1>🐺 FALU RYKTEN 2</h1>
+        <div>
+            <button id="showLoginBtn" class="tab-btn active">LOGGA IN</button>
+            <button id="showRegisterBtn" class="tab-btn">SKAPA KONTO</button>
+        </div>
+        <div id="loginFormDiv">
+            <input type="text" id="loginUsername" placeholder="Användarnamn"><br>
+            <input type="password" id="loginPassword" placeholder="Lösenord"><br>
+            <button id="doLoginBtn">🎮 Logga in</button>
+            <div id="loginMessage" style="margin-top:10px"></div>
+        </div>
+        <div id="registerFormDiv" style="display:none">
+            <input type="text" id="regUsername" placeholder="Användarnamn (minst 3)"><br>
+            <input type="password" id="regPassword" placeholder="Lösenord (minst 4)"><br>
+            <button id="doRegisterBtn">📝 Skapa konto</button>
+            <div id="regMessage" style="margin-top:10px"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // --------------------------------------------------------------
-    // Globals
+    // ---------- Globals ----------
     let currentUser = null;
     let rumorsData = [];
-    let userProfile = { level: 1, xp: 0, coins: 0, last_rumor_time: 0 };
-    let cooldownInterval = null;
+    let userProfile = { level: 1, xp: 0, coins: 0, owned_emojis: [], owned_effects: [] };
+    let loadingCounter = 0;
 
-    // Hjälpfunktion för fetch (anropar samma server)
+    const availableEmojis = ["😀", "😂", "😍", "🐺", "📢", "💀", "🎉", "🔥"];
+    const availableEffects = ["glow", "pixel", "rainbow", "shadow"];
+
+    // ---------- Loading overlay ----------
+    function showLoading() {
+        loadingCounter++;
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+    function hideLoading() {
+        loadingCounter--;
+        if (loadingCounter <= 0) {
+            loadingCounter = 0;
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+    }
+    async function withLoading(promise) {
+        showLoading();
+        try {
+            return await promise;
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // ---------- API-anrop ----------
     async function apiCall(endpoint, method, body) {
-        const opts = {
-            method: method,
-            headers: { 'Content-Type': 'application/json' }
-        };
+        const opts = { method, headers: { 'Content-Type': 'application/json' } };
         if (body) opts.body = JSON.stringify(body);
         const res = await fetch(endpoint, opts);
         const data = await res.json();
         return { status: res.status, data };
     }
 
-    // Ladda användarprofil
+    // ---------- Hjälpfunktioner ----------
     async function loadUserProfile() {
         if (!currentUser) return;
         const { data } = await apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET');
         if (data && typeof data === 'object') {
             userProfile = data;
-            document.getElementById('userLevel').innerText = userProfile.level || 1;
-            document.getElementById('userXp').innerText = userProfile.xp || 0;
-            document.getElementById('userCoins').innerText = userProfile.coins || 0;
-            updateCooldownDisplay();
+            updateUI();
         }
     }
 
-    // Beräkna cooldown (baserat på level)
-    function getCooldownSeconds(level) {
-        let cd = 60 - (level-1) * 2;
-        if (cd < 10) cd = 10;
-        return cd;
-    }
-
-    function updateCooldownDisplay() {
-        const level = userProfile.level || 1;
-        const cdSec = getCooldownSeconds(level);
-        document.getElementById('cooldownSec').innerText = cdSec;
-        // Om vi vill ha nedräkning senare
-    }
-
-    // Ladda alla rykten och rendera
     async function loadRumors() {
         const { data } = await apiCall('/rumors', 'GET');
         if (Array.isArray(data)) {
@@ -253,40 +282,118 @@
         }
     }
 
-    // Rendera rykten med likes & kommentarer
+    function updateUI() {
+        document.getElementById('levelNum').innerText = userProfile.level || 1;
+        document.getElementById('currentXp').innerText = userProfile.xp || 0;
+        const nextXp = ((Math.floor((userProfile.xp || 0) / 100) + 1) * 100);
+        document.getElementById('nextLevelXp').innerText = nextXp;
+        const percent = ((userProfile.xp % 100) / 100) * 100;
+        document.getElementById('xpProgressFill').style.width = percent + '%';
+        document.getElementById('userCoinsSide').innerText = userProfile.coins || 0;
+        // Uppdatera shop-knappar
+        renderShop();
+        // Uppdatera select-options för emojis/effects baserat på ägda
+        updateSelects();
+    }
+
+    function updateSelects() {
+        const emojiSelect = document.getElementById('rumorEmojiSelect');
+        const effectSelect = document.getElementById('rumorEffectSelect');
+        const ownedEmojis = userProfile.owned_emojis || [];
+        const ownedEffects = userProfile.owned_effects || [];
+        emojiSelect.innerHTML = '<option value="">Ingen emoji</option>';
+        ownedEmojis.forEach(emoji => {
+            emojiSelect.innerHTML += `<option value="${emoji}">${emoji}</option>`;
+        });
+        effectSelect.innerHTML = '<option value="">Ingen effekt</option>';
+        ownedEffects.forEach(effect => {
+            effectSelect.innerHTML += `<option value="${effect}">${effect}</option>`;
+        });
+    }
+
+    async function purchaseItem(type, itemId, price) {
+        const { data } = await withLoading(apiCall('/purchase', 'POST', { username: currentUser, type, item_id: itemId, price }));
+        if (data.success) {
+            await loadUserProfile();
+            alert(`Köpte ${itemId}!`);
+        } else {
+            alert(data.message);
+        }
+    }
+
+    function renderShop() {
+        const emojiContainer = document.getElementById('emojiShopList');
+        const effectContainer = document.getElementById('effectShopList');
+        const ownedEmojis = userProfile.owned_emojis || [];
+        const ownedEffects = userProfile.owned_effects || [];
+        emojiContainer.innerHTML = '';
+        availableEmojis.forEach(emoji => {
+            const owned = ownedEmojis.includes(emoji);
+            emojiContainer.innerHTML += `
+                <div class="shop-item">
+                    <span>${emoji}</span>
+                    ${!owned ? `<button class="buyEmojiBtn" data-emoji="${emoji}">Köp (5🪙)</button>` : '<span>Ägd ✅</span>'}
+                </div>
+            `;
+        });
+        effectContainer.innerHTML = '';
+        availableEffects.forEach(effect => {
+            const owned = ownedEffects.includes(effect);
+            effectContainer.innerHTML += `
+                <div class="shop-item">
+                    <span>${effect}</span>
+                    ${!owned ? `<button class="buyEffectBtn" data-effect="${effect}">Köp (10🪙)</button>` : '<span>Ägd ✅</span>'}
+                </div>
+            `;
+        });
+        // Bind events
+        document.querySelectorAll('.buyEmojiBtn').forEach(btn => {
+            btn.addEventListener('click', () => purchaseItem('emoji', btn.getAttribute('data-emoji'), 5));
+        });
+        document.querySelectorAll('.buyEffectBtn').forEach(btn => {
+            btn.addEventListener('click', () => purchaseItem('effect', btn.getAttribute('data-effect'), 10));
+        });
+    }
+
+    async function createRumor(title, content, emoji, effect) {
+        const { data } = await withLoading(apiCall('/create_rumor', 'POST', { username: currentUser, title, content, emoji, effect }));
+        if (data.success) {
+            document.getElementById('rumorTitle').value = '';
+            document.getElementById('rumorContent').value = '';
+            await loadRumors();
+            await loadUserProfile();
+            document.getElementById('rumorPostMessage').innerHTML = '✅ Rykte publicerat! +10 XP, +1🪙';
+            setTimeout(() => document.getElementById('rumorPostMessage').innerHTML = '', 3000);
+        } else {
+            document.getElementById('rumorPostMessage').innerHTML = `❌ ${data.message}`;
+        }
+    }
+
     function renderRumors() {
         const container = document.getElementById('rumorsList');
-        if (!container) return;
-        if (rumorsData.length === 0) {
-            container.innerHTML = '<div class="rumor-card">Inga rykten ännu. Bli först med att sprida ett!</div>';
+        if (!rumorsData.length) {
+            container.innerHTML = '<div class="rumor-card">Inga rykten ännu. Bli först!</div>';
             return;
         }
         let html = '';
         for (let r of rumorsData) {
             const dateStr = new Date(r.date).toLocaleString();
-            const likedByUser = r.liked_by && r.liked_by.includes(currentUser);
+            const liked = (r.liked_by || []).includes(currentUser);
+            const effectClass = r.effect ? `effect-${r.effect}` : '';
+            const emojiPrefix = r.emoji ? `${r.emoji} ` : '';
             html += `
-                <div class="rumor-card" data-id="${r.id}">
-                    <div class="rumor-title">📢 ${escapeHtml(r.title)}</div>
+                <div class="rumor-card ${effectClass}" data-id="${r.id}">
+                    <div class="rumor-title">${emojiPrefix}${escapeHtml(r.title)}</div>
                     <div class="rumor-meta">Av: ${escapeHtml(r.author)} | ${dateStr}</div>
                     <div class="rumor-content">${escapeHtml(r.content)}</div>
                     <div class="like-comment">
-                        <button class="like-btn" data-id="${r.id}">❤️ ${r.likes || 0} gilla</button>
+                        <button class="like-btn" data-id="${r.id}">❤️ ${r.likes} gilla</button>
                         <span>💬 ${(r.comments || []).length} kommentarer</span>
                     </div>
-                    <div class="comment-section">
-                        <div class="comment-list" id="comments-${r.id}">
-            `;
-            // Visa befintliga kommentarer
-            const comments = r.comments || [];
-            for (let c of comments) {
-                const commentDate = new Date(c.date).toLocaleString();
-                html += `<div class="comment"><strong>${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${commentDate}</span></div>`;
-            }
-            html += `
-                        </div>
+                    <div class="comment-section" id="comments-${r.id}">
+                        ${(r.comments || []).map(c => `<div class="comment"><strong>${escapeHtml(c.user)}</strong> ${escapeHtml(c.text)}<br><span style="font-size:0.7rem">${new Date(c.date).toLocaleString()}</span></div>`).join('')}
                         <div style="display:flex; gap:6px; margin-top:8px;">
-                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar..." style="flex:1">
+                            <input type="text" id="commentInput-${r.id}" placeholder="Skriv kommentar...">
                             <button class="comment-btn" data-id="${r.id}">Skicka</button>
                         </div>
                     </div>
@@ -294,192 +401,116 @@
             `;
         }
         container.innerHTML = html;
-        // Binda events för like och kommentar (delegation)
+        // Binda events
         container.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const rumorId = parseInt(btn.getAttribute('data-id'));
-                await likeRumor(rumorId);
+                const id = parseInt(btn.getAttribute('data-id'));
+                await withLoading(apiCall('/like_rumor', 'POST', { username: currentUser, rumor_id: id }));
+                await loadRumors();
+                await loadUserProfile();
             });
         });
         container.querySelectorAll('.comment-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const rumorId = parseInt(btn.getAttribute('data-id'));
-                const input = document.getElementById(`commentInput-${rumorId}`);
+                const id = parseInt(btn.getAttribute('data-id'));
+                const input = document.getElementById(`commentInput-${id}`);
                 const text = input.value.trim();
                 if (text) {
-                    await commentRumor(rumorId, text);
+                    await withLoading(apiCall('/comment_rumor', 'POST', { username: currentUser, rumor_id: id, text }));
+                    await loadRumors();
+                    await loadUserProfile();
                     input.value = '';
                 }
             });
         });
     }
 
-    async function likeRumor(rumorId) {
-        const { data, status } = await apiCall('/like_rumor', 'POST', { username: currentUser, rumor_id: rumorId });
-        if (data.success) {
-            await loadRumors();
-            await loadUserProfile(); // uppdatera XP
-        } else {
-            showTemporaryMessage(data.message || 'Kunde inte gilla', true);
-        }
-    }
-
-    async function commentRumor(rumorId, text) {
-        const { data } = await apiCall('/comment_rumor', 'POST', { username: currentUser, rumor_id: rumorId, text });
-        if (data.success) {
-            await loadRumors();
-            await loadUserProfile(); // XP för kommentar
-        } else {
-            alert(data.message);
-        }
-    }
-
-    async function createRumor(title, content) {
-        const { data, status } = await apiCall('/create_rumor', 'POST', { username: currentUser, title, content });
-        if (data.success) {
-            document.getElementById('rumorTitle').value = '';
-            document.getElementById('rumorContent').value = '';
-            await loadRumors();
-            await loadUserProfile();
-            document.getElementById('rumorPostMessage').innerText = '✅ Rykte publicerat! +10 XP, +1 🪙';
-            document.getElementById('rumorPostMessage').className = 'success';
-            setTimeout(() => {
-                document.getElementById('rumorPostMessage').innerText = '';
-            }, 3000);
-        } else {
-            document.getElementById('rumorPostMessage').innerText = data.message || 'Fel vid publicering';
-            document.getElementById('rumorPostMessage').className = 'error';
-        }
-    }
-
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
-    function showTemporaryMessage(msg, isError) {
-        const msgDiv = document.getElementById('rumorPostMessage');
-        if (msgDiv) {
-            msgDiv.innerText = msg;
-            msgDiv.className = isError ? 'error' : 'success';
-            setTimeout(() => { msgDiv.innerText = ''; }, 3000);
-        } else {
-            alert(msg);
-        }
-    }
-
-    // Inloggning
+    // ---------- Inloggning ----------
     async function login(username, password) {
-        const { data, status } = await apiCall('/login', 'POST', { username, password });
+        const { data } = await withLoading(apiCall('/login', 'POST', { username, password }));
         if (data.success) {
             currentUser = username;
             localStorage.setItem('falunUser', username);
             await loadUserProfile();
             await loadRumors();
             document.getElementById('loginView').style.display = 'none';
-            document.getElementById('dashboardView').style.display = 'block';
-            startCooldownTimer();
+            document.getElementById('app').style.display = 'flex';
         } else {
-            document.getElementById('loginMessage').innerText = data.message;
+            document.getElementById('loginMessage').innerHTML = data.message || 'Fel uppgifter';
         }
     }
 
     async function register(username, password) {
-        const { data } = await apiCall('/register', 'POST', { username, password });
+        const { data } = await withLoading(apiCall('/register', 'POST', { username, password }));
         if (data.success) {
-            document.getElementById('regMessage').innerText = 'Konto skapat! Logga in nu.';
-            document.getElementById('regMessage').className = 'success';
-            setTimeout(() => {
-                document.getElementById('showLoginBtn').click();
-            }, 1500);
+            document.getElementById('regMessage').innerHTML = 'Konto skapat! Logga in nu.';
+            setTimeout(() => document.getElementById('showLoginBtn').click(), 1500);
         } else {
-            document.getElementById('regMessage').innerText = data.message;
-            document.getElementById('regMessage').className = 'error';
+            document.getElementById('regMessage').innerHTML = data.message;
         }
     }
 
     function logout() {
         currentUser = null;
         localStorage.removeItem('falunUser');
-        if (cooldownInterval) clearInterval(cooldownInterval);
-        document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('loginView').style.display = 'block';
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('loginMessage').innerText = '';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('loginView').style.display = 'flex';
     }
 
-    function startCooldownTimer() {
-        if (cooldownInterval) clearInterval(cooldownInterval);
-        cooldownInterval = setInterval(async () => {
-            if (currentUser) {
-                await loadUserProfile();
-            }
-        }, 2000);
-    }
-
-    // UI-flikar för login/register
-    document.getElementById('showLoginBtn').addEventListener('click', () => {
+    // ---------- Event listeners ----------
+    document.getElementById('showLoginBtn').onclick = () => {
         document.getElementById('loginFormDiv').style.display = 'block';
         document.getElementById('registerFormDiv').style.display = 'none';
-        document.getElementById('showLoginBtn').classList.add('active');
-        document.getElementById('showRegisterBtn').classList.remove('active');
-    });
-    document.getElementById('showRegisterBtn').addEventListener('click', () => {
+    };
+    document.getElementById('showRegisterBtn').onclick = () => {
         document.getElementById('loginFormDiv').style.display = 'none';
         document.getElementById('registerFormDiv').style.display = 'block';
-        document.getElementById('showRegisterBtn').classList.add('active');
-        document.getElementById('showLoginBtn').classList.remove('active');
-    });
-    document.getElementById('doLoginBtn').addEventListener('click', () => {
+    };
+    document.getElementById('doLoginBtn').onclick = () => {
         const u = document.getElementById('loginUsername').value.trim();
         const p = document.getElementById('loginPassword').value;
         login(u, p);
-    });
-    document.getElementById('doRegisterBtn').addEventListener('click', () => {
+    };
+    document.getElementById('doRegisterBtn').onclick = () => {
         const u = document.getElementById('regUsername').value.trim();
         const p = document.getElementById('regPassword').value;
         register(u, p);
-    });
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('postRumorBtn').addEventListener('click', () => {
+    };
+    document.getElementById('logoutBtn').onclick = logout;
+    document.getElementById('postRumorBtn').onclick = () => {
         const title = document.getElementById('rumorTitle').value.trim();
         const content = document.getElementById('rumorContent').value.trim();
+        const emoji = document.getElementById('rumorEmojiSelect').value || null;
+        const effect = document.getElementById('rumorEffectSelect').value || null;
         if (!title || !content) {
-            document.getElementById('rumorPostMessage').innerText = 'Titel och innehåll krävs';
+            document.getElementById('rumorPostMessage').innerHTML = '❌ Titel och innehåll krävs';
             return;
         }
-        createRumor(title, content);
-    });
+        createRumor(title, content, emoji, effect);
+    };
 
-    // Kolla om användaren redan är inloggad (session)
+    // Återställ session
     const savedUser = localStorage.getItem('falunUser');
     if (savedUser) {
         currentUser = savedUser;
-        // Verifiera att användaren fortfarande finns (genom att hämta user_data)
-        apiCall(`/user_data?username=${encodeURIComponent(currentUser)}`, 'GET').then(({ data }) => {
-            if (data && typeof data === 'object' && !data.error) {
-                userProfile = data;
-                loadRumors().then(() => {
-                    document.getElementById('loginView').style.display = 'none';
-                    document.getElementById('dashboardView').style.display = 'block';
-                    startCooldownTimer();
-                    loadUserProfile();
-                });
+        (async () => {
+            await loadUserProfile();
+            if (userProfile && userProfile.level) {
+                await loadRumors();
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
             } else {
                 logout();
             }
-        }).catch(() => logout());
+        })();
     } else {
-        document.getElementById('loginView').style.display = 'block';
-        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('loginView').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
     }
 </script>
 </body>
