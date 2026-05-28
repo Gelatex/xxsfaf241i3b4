@@ -5,338 +5,279 @@ import time
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from datetime import datetime, timedelta
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-# ---------- GitHub-konfiguration ----------
+# GitHub-konfiguration
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_OWNER = "Gelatex"
 REPO_NAME = "xxsfaf241i3b4"
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
 
-def github_request(method, path, data=None):
-    """Gör anrop till GitHub API"""
+# ---------------------------
+# Hjälpfunktioner för GitHub-filer
+# ---------------------------
+def get_github_file(path):
+    """Hämta innehåll och SHA för en fil från GitHub"""
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    if method == 'GET':
-        resp = requests.get(url, headers=headers)
-    elif method == 'PUT':
-        resp = requests.put(url, headers=headers, json=data)
-    else:
-        raise Exception("Unsupported method")
-    
+    resp = requests.get(url, headers=HEADERS)
+    if resp.status_code == 404:
+        return None, None
+    if resp.status_code != 200:
+        raise Exception(f"Kunde inte läsa {path}: {resp.status_code}")
+    data = resp.json()
+    content = base64.b64decode(data['content']).decode('utf-8')
+    return content, data['sha']
+
+def update_github_file(path, content, sha=None):
+    """Uppdatera eller skapa en fil på GitHub"""
+    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}"
+    new_content_base64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+    payload = {"message": f"Uppdaterar {path}", "content": new_content_base64}
+    if sha:
+        payload["sha"] = sha
+    resp = requests.put(url, headers=HEADERS, json=payload)
     if resp.status_code not in [200, 201]:
-        # Om filen inte finns, returnera None
-        if resp.status_code == 404:
-            return None
-        raise Exception(f"GitHub API error {resp.status_code}: {resp.text}")
-    return resp.json()
+        raise Exception(f"Kunde inte uppdatera {path}: {resp.status_code}")
+    return True
 
-def read_github_json(filename, default=None):
-    """Läs JSON-fil från GitHub, returnera default om den inte finns"""
+def read_json_file(path, default=None):
+    """Läs en JSON-fil från GitHub, returnera default om den inte finns"""
+    content, sha = get_github_file(path)
+    if content is None:
+        return default if default is not None else {}, sha
     try:
-        result = github_request('GET', filename)
-        if result is None:
-            return default if default is not None else {}
-        content = base64.b64decode(result['content']).decode('utf-8')
-        return json.loads(content)
-    except Exception as e:
-        print(f"Error reading {filename}: {e}")
-        return default if default is not None else {}
-
-def write_github_json(filename, data, message="Update"):
-    """Skriv JSON-data till GitHub"""
-    # Först hämta nuvarande fil (för SHA)
-    existing = None
-    try:
-        existing = github_request('GET', filename)
+        return json.loads(content), sha
     except:
-        pass
-    
-    content = json.dumps(data, indent=2, ensure_ascii=False)
-    content_base64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
-    
-    payload = {
-        "message": message,
-        "content": content_base64
-    }
-    if existing and 'sha' in existing:
-        payload['sha'] = existing['sha']
-    
-    return github_request('PUT', filename, payload)
+        return default if default is not None else {}, sha
 
-# ---------- Hjälpfunktioner för användare ----------
+def write_json_file(path, data, sha=None):
+    """Skriv ett Python-objekt som JSON till GitHub"""
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    update_github_file(path, content, sha)
+
+# ---------------------------
+# Inloggningshantering (som tidigare)
+# ---------------------------
+def get_logins():
+    content, _ = get_github_file("logins")
+    if not content:
+        return {}
+    logins = {}
+    for line in content.splitlines():
+        if ':' in line:
+            u, p = line.strip().split(':', 1)
+            logins[u] = p
+    return logins
+
+def save_logins(logins):
+    content = "\n".join([f"{u}:{p}" for u, p in logins.items()])
+    _, sha = get_github_file("logins")
+    update_github_file("logins", content, sha)
+
+# ---------------------------
+# Användardata (XP, level, coins, last_rumor_time)
+# ---------------------------
 def get_users_data():
-    """Hämta användardata (level, xp, coins, cooldown)"""
-    default = {}
-    data = read_github_json('users_data.json', default)
-    # Säkerställ att alla fält finns för varje användare
-    for username, info in data.items():
-        if 'level' not in info:
-            info['level'] = 1
-        if 'xp' not in info:
-            info['xp'] = 0
-        if 'coins' not in info:
-            info['coins'] = 50  # startcoins
-        if 'last_rumor_time' not in info:
-            info['last_rumor_time'] = 0
+    data, _ = read_json_file("users_data.json", {})
     return data
 
 def save_users_data(data):
-    write_github_json('users_data.json', data, "Update users data")
+    _, sha = get_github_file("users_data.json")
+    write_json_file("users_data.json", data, sha)
 
-def add_xp(username, amount):
-    """Lägg till XP, hantera level-ups"""
+def get_user_profile(username):
     users = get_users_data()
     if username not in users:
-        users[username] = {"level": 1, "xp": 0, "coins": 50, "last_rumor_time": 0}
-    users[username]['xp'] += amount
-    # Level-up: varje level kräver 100 * level XP
-    old_level = users[username]['level']
-    new_level = old_level
-    while users[username]['xp'] >= new_level * 100:
-        users[username]['xp'] -= new_level * 100
-        new_level += 1
-        users[username]['coins'] += 50  # bonus coins vid level-up
+        users[username] = {
+            "xp": 0,
+            "level": 1,
+            "coins": 0,
+            "last_rumor_time": 0  # timestamp för senaste ryktet
+        }
+        save_users_data(users)
+    return users[username]
+
+def update_user_xp(username, xp_gain):
+    users = get_users_data()
+    if username not in users:
+        users[username] = {"xp": 0, "level": 1, "coins": 0, "last_rumor_time": 0}
+    old_level = users[username]["level"]
+    users[username]["xp"] += xp_gain
+    # Beräkna ny level: var 100 XP = +1 level
+    new_level = 1 + (users[username]["xp"] // 100)
+    users[username]["level"] = new_level
+    # Bonus coins vid levelup
     if new_level > old_level:
-        users[username]['level'] = new_level
+        coins_gain = (new_level - old_level) * 5
+        users[username]["coins"] += coins_gain
     save_users_data(users)
     return users[username]
 
-def get_cooldown_seconds(level):
-    """Cooldown i sekunder: level 1 = 60s, level 5 = 30s, level 10 = 10s"""
-    if level >= 10:
-        return 10
-    elif level >= 5:
-        return 30
-    else:
-        return 60
+def add_coins(username, amount):
+    users = get_users_data()
+    if username not in users:
+        users[username] = {"xp": 0, "level": 1, "coins": 0, "last_rumor_time": 0}
+    users[username]["coins"] += amount
+    save_users_data(users)
 
-# ---------- Inloggningskoll (logins-fil) ----------
-def check_login(username, password):
-    try:
-        result = github_request('GET', 'logins')
-        if result is None:
-            return False
-        content = base64.b64decode(result['content']).decode('utf-8')
-        for line in content.splitlines():
-            if ':' in line:
-                u, p = line.strip().split(':', 1)
-                if u == username and p == password:
-                    return True
-        return False
-    except:
-        return False
-
-# ---------- Rykten (stuffs.json) ----------
-def get_all_rumors():
-    data = read_github_json('stuffs.json', {"rumors": []})
-    if "rumors" not in data:
-        data["rumors"] = []
-    # Säkerställ att varje rykte har alla fält
-    for r in data["rumors"]:
-        if "likes" not in r:
-            r["likes"] = 0
-        if "liked_by" not in r:
-            r["liked_by"] = []
-        if "comments" not in r:
-            r["comments"] = []
-        if "timestamp" not in r:
-            r["timestamp"] = time.time()
+# ---------------------------
+# Rykten (stuffs) – sparas i rumors.json
+# ---------------------------
+def get_rumors():
+    data, _ = read_json_file("rumors.json", [])
     return data
 
-def save_rumors(data):
-    write_github_json('stuffs.json', data, "Update rumors")
+def save_rumors(rumors):
+    _, sha = get_github_file("rumors.json")
+    write_json_file("rumors.json", rumors, sha)
 
-def add_rumor(author, title, content):
-    data = get_all_rumors()
+def create_rumor(author, title, content):
+    rumors = get_rumors()
     new_rumor = {
-        "id": int(time.time() * 1000),  # unikt ID
+        "id": int(time.time() * 1000),  # unikt ID baserat på millisekunder
         "author": author,
         "title": title,
         "content": content,
+        "date": datetime.now().isoformat(),
         "likes": 0,
-        "liked_by": [],
-        "comments": [],
-        "timestamp": time.time()
+        "liked_by": [],  # lista över användarnamn som gillat
+        "comments": []    # varje kommentar: {"user": "xxx", "text": "yyy", "date": "..."}
     }
-    data["rumors"].insert(0, new_rumor)  # nyast överst
-    save_rumors(data)
-    # Ge XP för att skapa rykte
-    user_data = add_xp(author, 10)
-    return new_rumor, user_data
+    rumors.insert(0, new_rumor)  # nyaste först
+    save_rumors(rumors)
+    return new_rumor
 
 def like_rumor(rumor_id, username):
-    data = get_all_rumors()
-    for r in data["rumors"]:
+    rumors = get_rumors()
+    for r in rumors:
         if r["id"] == rumor_id:
-            if username in r["liked_by"]:
-                return False, "Redan gillat", None
-            r["likes"] += 1
+            if username in r.get("liked_by", []):
+                return False, "Du har redan gillat detta rykte"
+            r["likes"] = r.get("likes", 0) + 1
+            if "liked_by" not in r:
+                r["liked_by"] = []
             r["liked_by"].append(username)
-            save_rumors(data)
-            # Ge XP för like (bara om man gillar någon annans)
-            if r["author"] != username:
-                user_data = add_xp(username, 2)
-            else:
-                user_data = get_users_data().get(username, {})
-            return True, "Gillade!", user_data
-    return False, "Rykte finns inte", None
+            save_rumors(rumors)
+            return True, "Gillade!"
+    return False, "Rykte finns inte"
 
-def add_comment(rumor_id, username, comment_text):
-    data = get_all_rumors()
-    for r in data["rumors"]:
+def add_comment(rumor_id, username, text):
+    rumors = get_rumors()
+    for r in rumors:
         if r["id"] == rumor_id:
-            r["comments"].append({
-                "author": username,
-                "text": comment_text,
-                "timestamp": time.time()
-            })
-            save_rumors(data)
-            # Ge XP för kommentar (2 XP)
-            user_data = add_xp(username, 2)
-            return True, user_data
-    return False, None
+            comment = {
+                "user": username,
+                "text": text,
+                "date": datetime.now().isoformat()
+            }
+            r.setdefault("comments", []).append(comment)
+            save_rumors(rumors)
+            return True, "Kommentar tillagd"
+    return False, "Rykte finns inte"
 
-# ---------- Flask routes ----------
+# ---------------------------
+# API-endpoints
+# ---------------------------
 @app.route('/')
 def home():
     return send_from_directory('.', 'index.html')
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    if check_login(username, password):
-        # Hämta användardata
-        users = get_users_data()
-        if username not in users:
-            users[username] = {"level": 1, "xp": 0, "coins": 50, "last_rumor_time": 0}
-            save_users_data(users)
-        user_info = users[username]
-        return jsonify({
-            "success": True,
-            "username": username,
-            "level": user_info.get("level", 1),
-            "xp": user_info.get("xp", 0),
-            "coins": user_info.get("coins", 50),
-            "cooldown_seconds": get_cooldown_seconds(user_info.get("level", 1))
-        })
-    else:
-        return jsonify({"success": False, "message": "Fel användarnamn eller lösenord"}), 401
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    logins = get_logins()
+    if username in logins and logins[username] == password:
+        # Se till att användaren finns i users_data
+        get_user_profile(username)
+        return jsonify({"success": True, "message": "Inloggning lyckades"})
+    return jsonify({"success": False, "message": "Fel användarnamn eller lösenord"}), 401
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({"success": False, "message": "Krävs"}), 400
-    # Lägg till i logins-filen
-    try:
-        result = github_request('GET', 'logins')
-        if result:
-            content = base64.b64decode(result['content']).decode('utf-8')
-            sha = result['sha']
-        else:
-            content = ""
-            sha = None
-        if f"{username}:" in content:
-            return jsonify({"success": False, "message": "Användare finns redan"}), 409
-        new_content = content.rstrip() + "\n" + f"{username}:{password}" + ("\n" if not content.endswith("\n") else "")
-        new_base64 = base64.b64encode(new_content.encode('utf-8')).decode('utf-8')
-        payload = {"message": "New user", "content": new_base64}
-        if sha:
-            payload["sha"] = sha
-        github_request('PUT', 'logins', payload)
-        # Skapa användardata
-        users = get_users_data()
-        users[username] = {"level": 1, "xp": 0, "coins": 50, "last_rumor_time": 0}
-        save_users_data(users)
-        return jsonify({"success": True, "message": "Konto skapat"})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    if len(username) < 3 or len(password) < 4:
+        return jsonify({"success": False, "message": "Användarnamn minst 3 tecken, lösenord minst 4"}), 400
+    logins = get_logins()
+    if username in logins:
+        return jsonify({"success": False, "message": "Användarnamnet finns redan"}), 409
+    logins[username] = password
+    save_logins(logins)
+    # Skapa användarprofil
+    get_user_profile(username)
+    return jsonify({"success": True, "message": "Konto skapat!"})
 
-@app.route('/get_user', methods=['POST'])
-def get_user():
-    data = request.json
-    username = data.get('username')
-    users = get_users_data()
-    user = users.get(username, {"level": 1, "xp": 0, "coins": 50, "last_rumor_time": 0})
-    return jsonify({
-        "level": user.get("level", 1),
-        "xp": user.get("xp", 0),
-        "coins": user.get("coins", 50),
-        "cooldown_seconds": get_cooldown_seconds(user.get("level", 1)),
-        "last_rumor_time": user.get("last_rumor_time", 0)
-    })
+@app.route('/user_data', methods=['GET'])
+def user_data():
+    username = request.args.get('username')
+    if not username:
+        return jsonify({"error": "Username required"}), 400
+    profile = get_user_profile(username)
+    return jsonify(profile)
+
+@app.route('/rumors', methods=['GET'])
+def rumors():
+    return jsonify(get_rumors())
 
 @app.route('/create_rumor', methods=['POST'])
-def create_rumor():
-    data = request.json
+def create_rumor_endpoint():
+    data = request.get_json()
     username = data.get('username')
     title = data.get('title', '').strip()
     content = data.get('content', '').strip()
-    if not title or not content:
-        return jsonify({"success": False, "message": "Titel och innehåll krävs"}), 400
-    
-    users = get_users_data()
-    user = users.get(username, {"level": 1, "xp": 0, "coins": 50, "last_rumor_time": 0})
-    last_time = user.get("last_rumor_time", 0)
-    cooldown = get_cooldown_seconds(user.get("level", 1))
+    if not username or not title or not content:
+        return jsonify({"success": False, "message": "Alla fält krävs"}), 400
+    # Cooldown-koll
+    profile = get_user_profile(username)
+    level = profile["level"]
+    cooldown_seconds = max(10, 60 - (level-1) * 2)  # level 1:60s, level 25: max 10s
+    last_time = profile.get("last_rumor_time", 0)
     now = time.time()
-    if now - last_time < cooldown:
-        remaining = int(cooldown - (now - last_time))
-        return jsonify({"success": False, "message": f"Vänta {remaining} sekunder"}), 429
-    
-    rumor, updated_user = add_rumor(username, title, content)
-    # Uppdatera last_rumor_time
-    users[username]['last_rumor_time'] = now
+    if now - last_time < cooldown_seconds:
+        remaining = int(cooldown_seconds - (now - last_time))
+        return jsonify({"success": False, "message": f"Vänta {remaining} sekunder innan nästa rykte"}), 429
+    # Skapa ryktet
+    rumor = create_rumor(username, title, content)
+    # Uppdatera last_rumor_time och ge XP + coins
+    users = get_users_data()
+    users[username]["last_rumor_time"] = now
     save_users_data(users)
-    return jsonify({
-        "success": True,
-        "rumor": rumor,
-        "user": {
-            "level": updated_user.get("level", 1),
-            "xp": updated_user.get("xp", 0),
-            "coins": updated_user.get("coins", 50),
-            "cooldown_seconds": get_cooldown_seconds(updated_user.get("level", 1))
-        }
-    })
+    update_user_xp(username, 10)      # 10 XP för att skapa rykte
+    add_coins(username, 1)            # 1 coin per rykte
+    return jsonify({"success": True, "rumor": rumor})
 
 @app.route('/like_rumor', methods=['POST'])
-def like_rumor_route():
-    data = request.json
-    rumor_id = data.get('rumor_id')
+def like_rumor_endpoint():
+    data = request.get_json()
     username = data.get('username')
-    ok, msg, user_data = like_rumor(rumor_id, username)
+    rumor_id = data.get('rumor_id')
+    if not username or not rumor_id:
+        return jsonify({"success": False, "message": "Saknas data"}), 400
+    ok, msg = like_rumor(rumor_id, username)
     if ok:
-        return jsonify({"success": True, "message": msg, "user": user_data})
-    else:
-        return jsonify({"success": False, "message": msg}), 400
+        update_user_xp(username, 1)  # 1 XP för like
+        return jsonify({"success": True, "message": msg})
+    return jsonify({"success": False, "message": msg}), 400
 
 @app.route('/comment_rumor', methods=['POST'])
-def comment_rumor_route():
-    data = request.json
-    rumor_id = data.get('rumor_id')
+def comment_rumor_endpoint():
+    data = request.get_json()
     username = data.get('username')
-    comment_text = data.get('comment', '').strip()
-    if not comment_text:
-        return jsonify({"success": False, "message": "Kommentar får inte vara tom"}), 400
-    ok, user_data = add_comment(rumor_id, username, comment_text)
+    rumor_id = data.get('rumor_id')
+    text = data.get('text', '').strip()
+    if not username or not rumor_id or not text:
+        return jsonify({"success": False, "message": "Saknas data"}), 400
+    ok, msg = add_comment(rumor_id, username, text)
     if ok:
-        # Hämta uppdaterade rykten för att skicka tillbaka
-        rumors = get_all_rumors()
-        return jsonify({"success": True, "user": user_data, "rumors": rumors["rumors"]})
-    else:
-        return jsonify({"success": False, "message": "Kunde inte kommentera"}), 400
-
-@app.route('/get_rumors', methods=['GET'])
-def get_rumors():
-    data = get_all_rumors()
-    return jsonify({"rumors": data["rumors"]})
+        update_user_xp(username, 2)  # 2 XP för kommentar
+        return jsonify({"success": True, "message": msg})
+    return jsonify({"success": False, "message": msg}), 400
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
