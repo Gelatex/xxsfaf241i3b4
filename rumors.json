@@ -11,7 +11,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "EbbeKing",
+        "text": "damn",
+        "date": "2026-05-29T12:46:03.495129"
+      }
+    ],
     "emoji": null,
     "effect": "glow"
   },
