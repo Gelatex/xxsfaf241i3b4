@@ -68,5 +68,13 @@
     "last_rumor_time": 0,
     "owned_emojis": [],
     "owned_effects": []
+  },
+  "EbbeKing": {
+    "xp": 0,
+    "level": 1,
+    "coins": 10,
+    "last_rumor_time": 0,
+    "owned_emojis": [],
+    "owned_effects": []
   }
 }
