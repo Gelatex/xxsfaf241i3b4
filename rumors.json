@@ -5,8 +5,10 @@
     "title": "Julian",
     "content": "Julian röker braja utanför skolan och han är tightast i klassen!",
     "date": "2026-05-29T12:45:44.244106",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "EbbeKing"
+    ],
     "downvotes": 0,
     "downvoted_by": [],
     "comments": [],
