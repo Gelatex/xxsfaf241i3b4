@@ -70,9 +70,9 @@
     "owned_effects": []
   },
   "EbbeKing": {
-    "xp": 10,
+    "xp": 20,
     "level": 1,
-    "coins": 2,
+    "coins": 3,
     "last_rumor_time": 1780058242.0745575,
     "owned_emojis": [],
     "owned_effects": [
