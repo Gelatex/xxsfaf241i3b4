@@ -28,7 +28,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "Alvin",
+        "text": "såg det med egna ögon💀",
+        "date": "2026-05-29T12:44:38.955930"
+      }
+    ],
     "emoji": null,
     "effect": "glow"
   },
