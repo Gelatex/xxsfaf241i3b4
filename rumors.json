@@ -19,8 +19,10 @@
     "title": "Tja",
     "content": "Ska testa lumi",
     "date": "2026-05-29T12:48:11.973541",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "EbbeKing"
+    ],
     "downvotes": 0,
     "downvoted_by": [],
     "comments": [],
