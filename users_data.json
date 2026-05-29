@@ -80,9 +80,9 @@
     ]
   },
   "Alvin": {
-    "xp": 30,
+    "xp": 40,
     "level": 1,
-    "coins": 6,
+    "coins": 7,
     "last_rumor_time": 1780058593.706774,
     "owned_emojis": [
       "💀"
