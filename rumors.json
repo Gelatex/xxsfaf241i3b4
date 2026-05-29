@@ -34,7 +34,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "EbbeKing",
+        "text": "damn jag ska pippa",
+        "date": "2026-05-29T12:40:03.566406"
+      }
+    ],
     "emoji": "💀",
     "effect": null
   },
