@@ -11,7 +11,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "EbbeKing",
+        "text": "fr?",
+        "date": "2026-05-29T12:51:33.723486"
+      }
+    ],
     "emoji": null,
     "effect": "luminance"
   },
