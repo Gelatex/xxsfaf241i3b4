@@ -80,9 +80,11 @@
   "Alvin": {
     "xp": 1,
     "level": 1,
-    "coins": 10,
+    "coins": 0,
     "last_rumor_time": 0,
-    "owned_emojis": [],
+    "owned_emojis": [
+      "💀"
+    ],
     "owned_effects": []
   }
 }
