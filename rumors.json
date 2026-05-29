@@ -5,8 +5,10 @@
     "title": "levi gillar mosbrickor",
     "content": "tja hörde att levi i 9d gillar mosbrickor som sitter på hans ansikte!",
     "date": "2026-05-29T12:47:12.188628",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "EbbeKing"
+    ],
     "downvotes": 0,
     "downvoted_by": [],
     "comments": [],
