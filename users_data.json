@@ -60,5 +60,13 @@
     "last_rumor_time": 0,
     "owned_emojis": [],
     "owned_effects": []
+  },
+  "dawdawd": {
+    "xp": 0,
+    "level": 1,
+    "coins": 10,
+    "last_rumor_time": 0,
+    "owned_emojis": [],
+    "owned_effects": []
   }
 }
