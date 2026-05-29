@@ -22,8 +22,10 @@
     "title": "Leonel",
     "content": "Hörde idag en kärleks förklaring av leonel, han verkar verkligen gilla dendär tjejen elin som går i vår klass.",
     "date": "2026-05-29T12:43:11.579077",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "Alvin"
+    ],
     "downvotes": 0,
     "downvoted_by": [],
     "comments": [],
