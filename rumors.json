@@ -11,7 +11,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "EbbeKing",
+        "text": "damn jag vill också ha //mvh oscar",
+        "date": "2026-05-29T12:50:03.708391"
+      }
+    ],
     "emoji": null,
     "effect": null
   },
