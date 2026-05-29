@@ -43,7 +43,13 @@
     ],
     "downvotes": 0,
     "downvoted_by": [],
-    "comments": [],
+    "comments": [
+      {
+        "user": "Alvin",
+        "text": "Valid som fon",
+        "date": "2026-05-29T12:39:10.409137"
+      }
+    ],
     "emoji": null,
     "effect": "glow"
   },
