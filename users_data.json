@@ -72,11 +72,12 @@
   "EbbeKing": {
     "xp": 110,
     "level": 2,
-    "coins": 35,
+    "coins": 15,
     "last_rumor_time": 1780058833.5742776,
     "owned_emojis": [],
     "owned_effects": [
-      "glow"
+      "glow",
+      "luminance"
     ]
   },
   "Alvin": {
