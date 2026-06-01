@@ -5,8 +5,10 @@
     "title": "Fight över spex",
     "content": "Tja oscar och alvin slogs nyss i västras ingång angående spex. De bråkade om håret?",
     "date": "2026-06-01T07:51:14.263865",
-    "likes": 0,
-    "liked_by": [],
+    "likes": 1,
+    "liked_by": [
+      "EbbeKing"
+    ],
     "downvotes": 0,
     "downvoted_by": [],
     "comments": [],
